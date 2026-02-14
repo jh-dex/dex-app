@@ -6,10 +6,6 @@
 <title>맛집기록 — 나만의 맛집 리뷰 서비스</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
-
-<!-- 카카오맵 JavaScript SDK -->
-<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_JAVASCRIPT_KEY_HERE&libraries=services"></script>
-
 <style>
 :root{--brand:#D4603A;--brand-light:#F2A07B;--brand-dark:#A3412A;--brand-bg:#FFF5EF;--bg:#FAF7F4;--surface:#FFF;--neutral-50:#FAFAF9;--neutral-100:#F5F4F2;--neutral-200:#E5E2DE;--neutral-300:#D1CCC5;--neutral-400:#A9A29A;--neutral-500:#7C7670;--neutral-600:#5C5650;--neutral-700:#44403A;--neutral-800:#2C2924;--neutral-900:#1A1816;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--shadow-sm:0 1px 3px rgba(26,24,22,.04),0 1px 2px rgba(26,24,22,.03);--shadow-md:0 4px 16px rgba(26,24,22,.06),0 2px 4px rgba(26,24,22,.04);--shadow-lg:0 12px 40px rgba(26,24,22,.08),0 4px 12px rgba(26,24,22,.04);--shadow-hover:0 8px 30px rgba(212,96,58,.12),0 4px 8px rgba(26,24,22,.06);--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -41,27 +37,33 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 </head>
 <body>
 <div id="root"></div>
+
+<!-- 카카오 JS SDK -->
+<script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react.dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
 
 // ═══════════════════════════════════════════════════════════
-// CONFIG — 여기에 키를 넣으면 실서비스로 전환됩니다
+// CONFIG — 여기에 키를 넣으세요
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL = "https://wxlqnlkxxddoszcoypbn.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bHFubGt4eGRkb3N6Y295cGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzkwNTksImV4cCI6MjA4NjU1NTA1OX0.Dmad5ZyA0wqtWAMg7q--KzW8i8_WBQMDT2364oPFOic";
-
-// ⭐ 카카오맵 JavaScript 키를 여기에 입력하세요
-// 카카오 개발자 콘솔 (https://developers.kakao.com)에서
-const KAKAO_JAVASCRIPT_KEY = "f9808cf4bbd88596818153811b814a67";
+const SUPABASE_URL = "https://wxlqnlkxxddoszcoypbn.supabase.co";           // 예: "https://abcdefg.supabase.co"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bHFubGt4eGRkb3N6Y295cGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzkwNTksImV4cCI6MjA4NjU1NTA1OX0.Dmad5ZyA0wqtWAMg7q--KzW8i8_WBQMDT2364oPFOic";      // 예: "eyJhbGciOiJIUz..."
+const KAKAO_JS_KEY = "f9808cf4bbd88596818153811b814a67";           // 카카오 JavaScript 키 (REST 키 아님!)
 
 const USE_DB = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
-const USE_KAKAO = !!(KAKAO_JAVASCRIPT_KEY && KAKAO_JAVASCRIPT_KEY !== "YOUR_JAVASCRIPT_KEY_HERE");
+const USE_KAKAO = !!KAKAO_JS_KEY;
+
+// 카카오 SDK 초기화
+if(USE_KAKAO && window.Kakao && !window.Kakao.isInitialized()){
+  window.Kakao.init(KAKAO_JS_KEY);
+}
 
 // ═══════════════════════════════════════════════════════════
-// Supabase 간이 클라이언트 (SDK 없이 REST API 직접 호출)
+// Supabase 간이 클라이언트
 // ═══════════════════════════════════════════════════════════
 const sb = {
   headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" },
@@ -75,7 +77,6 @@ const sb = {
   }
 };
 
-// DB에서 맛집 + 리뷰 전체 로드
 async function loadFromDB() {
   const restaurants = await sb.get("restaurants", "order=created_at.desc");
   const reviews = await sb.get("reviews", "order=created_at.desc");
@@ -89,88 +90,36 @@ async function loadFromDB() {
   }));
 }
 
-// DB에 맛집 추가
 async function addRestaurantToDB(data) {
-  const res = await sb.post("restaurants", {
-    name: data.name, address: data.address, category: data.category,
-    phone: data.phone, map_link: data.mapLink
-  });
+  const res = await sb.post("restaurants", { name: data.name, address: data.address, category: data.category, phone: data.phone, map_link: data.mapLink });
   return res[0];
 }
 
-// DB에 리뷰 추가
 async function addReviewToDB(restaurantId, data) {
-  const res = await sb.post("reviews", {
-    restaurant_id: restaurantId, nickname: data.nickname,
-    rating: data.rating, comment: data.comment
-  });
+  const res = await sb.post("reviews", { restaurant_id: restaurantId, nickname: data.nickname, rating: data.rating, comment: data.comment });
   return res[0];
 }
 
 // ═══════════════════════════════════════════════════════════
-// 카카오맵 검색 (Mock / 실제 API)
+// 카카오 JS SDK 키워드 검색
 // ═══════════════════════════════════════════════════════════
-const MOCK_SEARCH_DB = [
-  {place_name:"을지로 골목식당",address_name:"서울 중구 을지로 14길 25",road_address_name:"서울 중구 을지로14길 25",category_name:"음식점 > 한식",phone:"02-2266-1234",place_url:"https://place.map.kakao.com/12345",x:"126.991",y:"37.566"},
-  {place_name:"을지로 노가리골목 호프",address_name:"서울 중구 을지로3가 277",road_address_name:"서울 중구 을지로 112",category_name:"음식점 > 호프/맥주",phone:"02-2279-5678",place_url:"https://place.map.kakao.com/12346",x:"126.992",y:"37.567"},
-  {place_name:"을지면옥",address_name:"서울 중구 을지로 38길 12",road_address_name:"서울 중구 을지로38길 12",category_name:"음식점 > 한식 > 냉면",phone:"02-2267-8901",place_url:"https://place.map.kakao.com/12347",x:"126.993",y:"37.565"},
-  {place_name:"연남동 파스타바",address_name:"서울 마포구 연남로 3길 18",road_address_name:"서울 마포구 연남로3길 18",category_name:"음식점 > 양식 > 파스타",phone:"02-332-1234",place_url:"https://place.map.kakao.com/22345",x:"126.921",y:"37.566"},
-  {place_name:"라포르투나 파스타",address_name:"서울 강남구 역삼로 231",road_address_name:"서울 강남구 역삼로 231",category_name:"음식점 > 양식 > 파스타",phone:"02-555-6789",place_url:"https://place.map.kakao.com/22346",x:"127.036",y:"37.501"},
-  {place_name:"성수 수제버거",address_name:"서울 성동구 서울숲2길 44",road_address_name:"서울 성동구 서울숲2길 44",category_name:"음식점 > 양식 > 햄버거",phone:"02-499-3456",place_url:"https://place.map.kakao.com/32345",x:"127.044",y:"37.544"},
-  {place_name:"다운타우너 성수점",address_name:"서울 성동구 서울숲4길 18",road_address_name:"서울 성동구 서울숲4길 18",category_name:"음식점 > 양식 > 햄버거",phone:"02-498-7890",place_url:"https://place.map.kakao.com/32346",x:"127.045",y:"37.545"},
-  {place_name:"쉐이크쉑 강남점",address_name:"서울 강남구 강남대로 452",road_address_name:"서울 강남구 강남대로 452",category_name:"음식점 > 양식 > 햄버거",phone:"02-6925-1234",place_url:"https://place.map.kakao.com/32347",x:"127.028",y:"37.497"},
-  {place_name:"망원시장 떡볶이",address_name:"서울 마포구 망원로 62",road_address_name:"서울 마포구 망원로 62",category_name:"음식점 > 분식",phone:"02-335-4567",place_url:"https://place.map.kakao.com/42345",x:"126.909",y:"37.556"},
-  {place_name:"신당동 떡볶이타운",address_name:"서울 중구 퇴계로76가길 21",road_address_name:"서울 중구 퇴계로76가길 21",category_name:"음식점 > 분식",phone:"02-2232-8901",place_url:"https://place.map.kakao.com/42346",x:"127.009",y:"37.558"},
-  {place_name:"이태원 타코집",address_name:"서울 용산구 이태원로 27길 8",road_address_name:"서울 용산구 이태원로27길 8",category_name:"음식점 > 멕시칸",phone:"02-797-2345",place_url:"https://place.map.kakao.com/52345",x:"126.994",y:"37.534"},
-  {place_name:"비바타코 한남점",address_name:"서울 용산구 한남대로 42길 30",road_address_name:"서울 용산구 한남대로42길 30",category_name:"음식점 > 멕시칸",phone:"02-749-6789",place_url:"https://place.map.kakao.com/52346",x:"126.997",y:"37.536"},
-  {place_name:"광장시장 빈대떡",address_name:"서울 종로구 창경궁로 88",road_address_name:"서울 종로구 창경궁로 88",category_name:"음식점 > 한식 > 전/빈대떡",phone:"02-2267-0903",place_url:"https://place.map.kakao.com/62345",x:"126.999",y:"37.570"},
-  {place_name:"홍대 스시오마카세",address_name:"서울 마포구 와우산로 35길 19",road_address_name:"서울 마포구 와우산로35길 19",category_name:"음식점 > 일식 > 초밥",phone:"02-322-9012",place_url:"https://place.map.kakao.com/72345",x:"126.926",y:"37.555"},
-];
-
-const mockSearch = (q) => {
-  const l = q.toLowerCase();
-  return MOCK_SEARCH_DB.filter(r =>
-    r.place_name.toLowerCase().includes(l) ||
-    r.address_name.toLowerCase().includes(l) ||
-    r.category_name.toLowerCase().includes(l)
-  ).slice(0, 6);
-};
-
-// 카카오맵 JavaScript SDK 검색 (브라우저에서 작동)
-const kakaoSearch = async(q) => {
-  // 카카오 SDK가 로드되지 않았거나 키가 없으면 Mock 데이터 사용
-  if(!USE_KAKAO || !window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
-    console.log('카카오맵 SDK 미사용 - Mock 데이터로 검색');
-    return mockSearch(q);
-  }
-  
+const kakaoSearch = (query) => {
   return new Promise((resolve) => {
-    try {
-      const ps = new window.kakao.maps.services.Places();
-      
-      ps.keywordSearch(q, (data, status) => {
-        if(status === window.kakao.maps.services.Status.OK) {
-          console.log('카카오맵 검색 성공:', data.length, '건');
-          resolve(data.slice(0, 8));
-        } else {
-          console.log('카카오맵 검색 실패, Mock 데이터 사용');
-          resolve(mockSearch(q));
-        }
-      }, {
-        category_group_code: 'FD6',  // 음식점 카테고리
-        size: 8
-      });
-    } catch(e) {
-      console.error('카카오맵 검색 오류:', e);
-      resolve(mockSearch(q));
+    if(!USE_KAKAO || !window.Kakao?.isInitialized()){
+      resolve([]);
+      return;
     }
+    const ps = new window.kakao.maps.services.Places();
+    ps.keywordSearch(query, (data, status) => {
+      if(status === window.kakao.maps.services.Status.OK){
+        const filtered = data.filter(p => p.category_group_code === "FD6" || p.category_name?.includes("음식점"));
+        resolve(filtered.length > 0 ? filtered.slice(0, 8) : data.slice(0, 8));
+      } else {
+        resolve([]);
+      }
+    }, { category_group_code: "FD6", size: 10 });
   });
 };
-
-// ═══════════════════════════════════════════════════════════
-// Fallback Mock 데이터 (DB 미연결 시)
-// ═══════════════════════════════════════════════════════════
-const FALLBACK_DATA = [];
 
 // ═══════════════════════════════════════════════════════════
 // 공통 컴포넌트
@@ -210,11 +159,23 @@ function App(){
   const [searching,setSearching]=useState(false);
   const [searched,setSearched]=useState(false);
   const [picked,setPicked]=useState(null);
+  const [kakaoReady,setKakaoReady]=useState(false);
   const timer=useRef(null);
   const [rn,setRn]=useState("");
   const [rr,setRr]=useState(0);
   const [rc,setRc]=useState("");
   const sel=rests.find(r=>r.id===selId);
+
+  // 카카오 지도 SDK 로드 (JS 키 방식)
+  useEffect(()=>{
+    if(!USE_KAKAO) return;
+    const script=document.createElement("script");
+    script.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
+    script.onload=()=>{
+      window.kakao.maps.load(()=>{ setKakaoReady(true); });
+    };
+    document.head.appendChild(script);
+  },[]);
 
   // 초기 데이터 로드
   useEffect(()=>{
@@ -224,9 +185,9 @@ function App(){
           const data=await loadFromDB();
           setRests(data);
         } else {
-          setRests(FALLBACK_DATA);
+          setRests([]);
         }
-      } catch(e){ console.error("DB load error:",e); setRests(FALLBACK_DATA); }
+      } catch(e){ console.error("DB load error:",e); setRests([]); }
       setLoading(false);
       setTimeout(()=>setMounted(true),100);
     })();
@@ -250,7 +211,7 @@ function App(){
       try{
         const row=await addRestaurantToDB(newData);
         setRests(prev=>[{id:row.id,...newData,reviews:[]},...prev]);
-      }catch(e){console.error(e); setRests(prev=>[{id:Date.now(),...newData,reviews:[]},...prev])}
+      }catch(e){console.error(e)}
     } else {
       setRests(prev=>[{id:Date.now(),...newData,reviews:[]},...prev]);
     }
@@ -264,7 +225,7 @@ function App(){
       try{
         const row=await addReviewToDB(selId, newData);
         setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:[{id:row.id,...newData,createdAt:row.created_at.slice(0,10)},...r.reviews]}:r));
-      }catch(e){console.error(e); setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:[{id:Date.now(),...newData,createdAt:new Date().toISOString().slice(0,10)},...r.reviews]}:r))}
+      }catch(e){console.error(e)}
     } else {
       setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:[{id:Date.now(),...newData,createdAt:new Date().toISOString().slice(0,10)},...r.reviews]}:r));
     }
@@ -282,8 +243,7 @@ function App(){
       <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(250,247,244,.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--neutral-200)"}}>
         <div className="container-main" style={{maxWidth:960,margin:"0 auto",padding:"0 32px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
           <div style={{fontWeight:900,fontSize:22,letterSpacing:"-.04em",color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>nav("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            {/* DB 연결 상태 표시 */}
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:USE_DB?"#E8F5E9":"var(--neutral-100)",color:USE_DB?"#2E7D32":"var(--neutral-500)"}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:USE_DB?"#4CAF50":"var(--neutral-400)"}}/>
               {USE_DB?"DB 연결됨":"로컬 모드"}
@@ -305,6 +265,15 @@ function App(){
             <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand-dark)"}}><Pin size={14}/>{rests.length}개 맛집</div>
             <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>{rests.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
+
+          {rests.length===0?
+            <div style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-2xl)",textAlign:"center",border:"1px dashed var(--neutral-200)"}}>
+              <div style={{fontSize:48,marginBottom:16}}>🍽️</div>
+              <p style={{fontSize:18,fontWeight:700,color:"var(--neutral-800)",marginBottom:8}}>아직 등록된 맛집이 없어요</p>
+              <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:20}}>첫 번째 맛집을 등록해보세요!</p>
+              <button className="btn-primary" onClick={()=>nav("add")}>+ 맛집 등록하기</button>
+            </div>
+          :
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
             {sorted.map((r,i)=>{const a=avg(r.reviews);return(
               <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-100)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>nav("detail",r.id)}>
@@ -322,7 +291,7 @@ function App(){
                 </div>
               </div>
             )})}
-          </div>
+          </div>}
         </div>}
 
         {/* DETAIL */}
@@ -384,9 +353,9 @@ function App(){
           <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-100)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:8}}>
               <h1 style={{fontSize:26,fontWeight:900,color:"var(--neutral-900)",letterSpacing:"-.04em"}}>맛집 검색 & 등록</h1>
-              <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:USE_KAKAO?"#E8F5E9":"var(--neutral-100)",color:USE_KAKAO?"#2E7D32":"var(--neutral-500)"}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:USE_KAKAO?"#4CAF50":"var(--neutral-400)"}}/>
-                {USE_KAKAO?"카카오 API 연동됨":"데모 모드"}
+              <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:kakaoReady?"#E8F5E9":"var(--neutral-100)",color:kakaoReady?"#2E7D32":"var(--neutral-500)"}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:kakaoReady?"#4CAF50":"var(--neutral-400)"}}/>
+                {kakaoReady?"카카오 검색 연동됨":USE_KAKAO?"카카오 로딩중...":"카카오 미연결"}
               </div>
             </div>
             <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>가게 이름이나 키워드로 검색하면 카카오맵에서 정보를 가져옵니다</p>
@@ -396,7 +365,7 @@ function App(){
                 <div style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",color:"var(--neutral-400)",zIndex:1}}>
                   <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 </div>
-                <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder="맛집 이름을 검색하세요 (예: 을지로, 파스타, 버거)" value={sq} onChange={e=>doSearch(e.target.value)}/>
+                <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder={kakaoReady?"맛집 이름을 검색하세요 (예: 강남 맛집, 홍대 파스타)":"카카오 API 키를 먼저 설정해주세요"} value={sq} onChange={e=>doSearch(e.target.value)} disabled={!kakaoReady}/>
                 {searching&&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-200)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
               </div>
 
@@ -441,13 +410,16 @@ function App(){
               <button className="btn-primary" onClick={addPlace}>이 맛집 등록하기</button>
             </div>}
 
-            {!picked&&!searched&&sq.length===0&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
+            {!picked&&!searched&&sq.length===0&&kakaoReady&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
               <div style={{fontSize:36,marginBottom:12}}>🔍</div>
               <p style={{fontSize:15,color:"var(--neutral-500)",fontWeight:500,marginBottom:6}}>가게 이름으로 검색해보세요</p>
-              <p style={{fontSize:13,color:"var(--neutral-400)",lineHeight:1.6}}>카카오맵 데이터에서 주소, 카테고리, 전화번호를<br/>자동으로 가져옵니다</p>
-              <div style={{display:"flex",gap:8,justifyContent:"center",marginTop:16,flexWrap:"wrap"}}>
-                {["을지로","파스타","버거","떡볶이","타코"].map(kw=><button key={kw} onClick={()=>{setSq(kw);doSearch(kw)}} style={{background:"var(--surface)",border:"1px solid var(--neutral-200)",borderRadius:100,padding:"7px 16px",fontSize:13,fontWeight:500,color:"var(--neutral-600)",cursor:"pointer",transition:"all .15s",fontFamily:"'Noto Sans KR',sans-serif"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--brand)";e.currentTarget.style.color="var(--brand)"}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--neutral-200)";e.currentTarget.style.color="var(--neutral-600)"}}>{kw}</button>)}
-              </div>
+              <p style={{fontSize:13,color:"var(--neutral-400)",lineHeight:1.6}}>카카오맵에서 주소, 카테고리, 전화번호를<br/>자동으로 가져옵니다</p>
+            </div>}
+
+            {!USE_KAKAO&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
+              <div style={{fontSize:36,marginBottom:12}}>⚙️</div>
+              <p style={{fontSize:15,color:"var(--neutral-500)",fontWeight:500,marginBottom:6}}>카카오 API 설정이 필요합니다</p>
+              <p style={{fontSize:13,color:"var(--neutral-400)",lineHeight:1.6}}>index.html 상단의 KAKAO_JS_KEY에<br/>카카오 JavaScript 키를 입력해주세요</p>
             </div>}
           </div>
         </div>}
