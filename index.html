@@ -6,6 +6,10 @@
 <title>맛집기록 — 나만의 맛집 리뷰 서비스</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+
+<!-- 카카오맵 JavaScript SDK -->
+<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_JAVASCRIPT_KEY_HERE&libraries=services"></script>
+
 <style>
 :root{--brand:#D4603A;--brand-light:#F2A07B;--brand-dark:#A3412A;--brand-bg:#FFF5EF;--bg:#FAF7F4;--surface:#FFF;--neutral-50:#FAFAF9;--neutral-100:#F5F4F2;--neutral-200:#E5E2DE;--neutral-300:#D1CCC5;--neutral-400:#A9A29A;--neutral-500:#7C7670;--neutral-600:#5C5650;--neutral-700:#44403A;--neutral-800:#2C2924;--neutral-900:#1A1816;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--shadow-sm:0 1px 3px rgba(26,24,22,.04),0 1px 2px rgba(26,24,22,.03);--shadow-md:0 4px 16px rgba(26,24,22,.06),0 2px 4px rgba(26,24,22,.04);--shadow-lg:0 12px 40px rgba(26,24,22,.08),0 4px 12px rgba(26,24,22,.04);--shadow-hover:0 8px 30px rgba(212,96,58,.12),0 4px 8px rgba(26,24,22,.06);--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -38,7 +42,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 <body>
 <div id="root"></div>
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react.dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useEffect,useRef} = React;
@@ -46,11 +50,15 @@ const {useState,useEffect,useRef} = React;
 // ═══════════════════════════════════════════════════════════
 // CONFIG — 여기에 키를 넣으면 실서비스로 전환됩니다
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL = "https://wxlqnlkxxddoszcoypbn.supabase.co";      // 예: "https://abcdefg.supabase.co"
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bHFubGt4eGRkb3N6Y295cGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzkwNTksImV4cCI6MjA4NjU1NTA1OX0.Dmad5ZyA0wqtWAMg7q--KzW8i8_WBQMDT2364oPFOic"; // 예: "eyJhbGciOiJIUz..."
-const KAKAO_API_KEY = "5b0f65b2f87bde80143d5bf3723ed1d3";     // 예: "a1b2c3d4e5f6..."
+const SUPABASE_URL = "https://wxlqnlkxxddoszcoypbn.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bHFubGt4eGRkb3N6Y295cGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzkwNTksImV4cCI6MjA4NjU1NTA1OX0.Dmad5ZyA0wqtWAMg7q--KzW8i8_WBQMDT2364oPFOic";
+
+// ⭐ 카카오맵 JavaScript 키를 여기에 입력하세요
+// 카카오 개발자 콘솔 (https://developers.kakao.com)에서
+const KAKAO_JAVASCRIPT_KEY = "f9808cf4bbd88596818153811b814a67";
 
 const USE_DB = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+const USE_KAKAO = !!(KAKAO_JAVASCRIPT_KEY && KAKAO_JAVASCRIPT_KEY !== "YOUR_JAVASCRIPT_KEY_HERE");
 
 // ═══════════════════════════════════════════════════════════
 // Supabase 간이 클라이언트 (SDK 없이 REST API 직접 호출)
@@ -119,37 +127,50 @@ const MOCK_SEARCH_DB = [
   {place_name:"홍대 스시오마카세",address_name:"서울 마포구 와우산로 35길 19",road_address_name:"서울 마포구 와우산로35길 19",category_name:"음식점 > 일식 > 초밥",phone:"02-322-9012",place_url:"https://place.map.kakao.com/72345",x:"126.926",y:"37.555"},
 ];
 
-const mockSearch=(q)=>{const l=q.toLowerCase();return MOCK_SEARCH_DB.filter(r=>r.place_name.toLowerCase().includes(l)||r.address_name.toLowerCase().includes(l)||r.category_name.toLowerCase().includes(l)).slice(0,6)};
+const mockSearch = (q) => {
+  const l = q.toLowerCase();
+  return MOCK_SEARCH_DB.filter(r =>
+    r.place_name.toLowerCase().includes(l) ||
+    r.address_name.toLowerCase().includes(l) ||
+    r.category_name.toLowerCase().includes(l)
+  ).slice(0, 6);
+};
 
-const kakaoSearch=async(q)=>{
-  if(!KAKAO_API_KEY)return mockSearch(q);
-  try{const r=await fetch(`https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(q)}&category_group_code=FD6&size=8`,{headers:{Authorization:`KakaoAK ${KAKAO_API_KEY}`}});const d=await r.json();return d.documents||[]}catch(e){return mockSearch(q)}
+// 카카오맵 JavaScript SDK 검색 (브라우저에서 작동)
+const kakaoSearch = async(q) => {
+  // 카카오 SDK가 로드되지 않았거나 키가 없으면 Mock 데이터 사용
+  if(!USE_KAKAO || !window.kakao || !window.kakao.maps || !window.kakao.maps.services) {
+    console.log('카카오맵 SDK 미사용 - Mock 데이터로 검색');
+    return mockSearch(q);
+  }
+  
+  return new Promise((resolve) => {
+    try {
+      const ps = new window.kakao.maps.services.Places();
+      
+      ps.keywordSearch(q, (data, status) => {
+        if(status === window.kakao.maps.services.Status.OK) {
+          console.log('카카오맵 검색 성공:', data.length, '건');
+          resolve(data.slice(0, 8));
+        } else {
+          console.log('카카오맵 검색 실패, Mock 데이터 사용');
+          resolve(mockSearch(q));
+        }
+      }, {
+        category_group_code: 'FD6',  // 음식점 카테고리
+        size: 8
+      });
+    } catch(e) {
+      console.error('카카오맵 검색 오류:', e);
+      resolve(mockSearch(q));
+    }
+  });
 };
 
 // ═══════════════════════════════════════════════════════════
 // Fallback Mock 데이터 (DB 미연결 시)
 // ═══════════════════════════════════════════════════════════
-const FALLBACK_DATA=[
-  {id:1,name:"을지로 골목식당",address:"서울 중구 을지로 14길 25",category:"한식",phone:"02-2266-1234",mapLink:"https://place.map.kakao.com/12345",reviews:[
-    {id:1,nickname:"미식가김씨",rating:5,comment:"된장찌개가 정말 깊은 맛이에요. 어머니 손맛 그대로!",createdAt:"2025-02-10"},
-    {id:2,nickname:"점심러버",rating:4,comment:"반찬이 푸짐하고 가성비 최고",createdAt:"2025-02-08"},
-    {id:3,nickname:"직장인A",rating:4,comment:"줄이 좀 길지만 기다릴 가치 있음",createdAt:"2025-02-05"},
-  ]},
-  {id:2,name:"연남동 파스타바",address:"서울 마포구 연남로 3길 18",category:"양식 > 파스타",phone:"02-332-1234",mapLink:"https://place.map.kakao.com/22345",reviews:[
-    {id:1,nickname:"파스타매니아",rating:5,comment:"트러플 크림 파스타 인생 파스타 등극",createdAt:"2025-02-09"},
-    {id:2,nickname:"데이트코스",rating:5,comment:"분위기도 좋고 와인 셀렉션도 훌륭해요",createdAt:"2025-02-07"},
-  ]},
-  {id:3,name:"망원시장 떡볶이",address:"서울 마포구 망원로 62",category:"분식",phone:"02-335-4567",mapLink:"https://place.map.kakao.com/42345",reviews:[
-    {id:1,nickname:"분식킹",rating:4,comment:"매콤달콤 추억의 맛! 튀김도 바삭",createdAt:"2025-02-11"},
-  ]},
-  {id:4,name:"성수 수제버거",address:"서울 성동구 서울숲2길 44",category:"양식 > 햄버거",phone:"02-499-3456",mapLink:"https://place.map.kakao.com/32345",reviews:[
-    {id:1,nickname:"버거헌터",rating:5,comment:"패티가 두툼하고 육즙이 미쳤어요",createdAt:"2025-02-10"},
-    {id:2,nickname:"성수동주민",rating:4,comment:"감자튀김 소스가 특이하고 맛있음",createdAt:"2025-02-06"},
-    {id:3,nickname:"주말외식",rating:3,comment:"맛은 좋은데 가격이 좀 있어요",createdAt:"2025-02-03"},
-    {id:4,nickname:"미식탐험",rating:5,comment:"스모키 BBQ 버거 강추합니다!",createdAt:"2025-01-28"},
-  ]},
-  {id:5,name:"이태원 타코집",address:"서울 용산구 이태원로 27길 8",category:"멕시칸",phone:"02-797-2345",mapLink:"https://place.map.kakao.com/52345",reviews:[]},
-];
+const FALLBACK_DATA = [];
 
 // ═══════════════════════════════════════════════════════════
 // 공통 컴포넌트
@@ -363,9 +384,9 @@ function App(){
           <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-100)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:8}}>
               <h1 style={{fontSize:26,fontWeight:900,color:"var(--neutral-900)",letterSpacing:"-.04em"}}>맛집 검색 & 등록</h1>
-              <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:KAKAO_API_KEY?"#E8F5E9":"var(--neutral-100)",color:KAKAO_API_KEY?"#2E7D32":"var(--neutral-500)"}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:KAKAO_API_KEY?"#4CAF50":"var(--neutral-400)"}}/>
-                {KAKAO_API_KEY?"카카오 API 연동됨":"데모 모드"}
+              <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:USE_KAKAO?"#E8F5E9":"var(--neutral-100)",color:USE_KAKAO?"#2E7D32":"var(--neutral-500)"}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:USE_KAKAO?"#4CAF50":"var(--neutral-400)"}}/>
+                {USE_KAKAO?"카카오 API 연동됨":"데모 모드"}
               </div>
             </div>
             <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>가게 이름이나 키워드로 검색하면 카카오맵에서 정보를 가져옵니다</p>
