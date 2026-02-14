@@ -66,6 +66,10 @@ const sb = {
   async post(table, body) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, { method: "POST", headers: this.headers, body: JSON.stringify(body) });
     return r.json();
+  },
+  async del(table, params = "") {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { method: "DELETE", headers: this.headers });
+    return r.json();
   }
 };
 
@@ -90,6 +94,15 @@ async function addRestaurantToDB(data) {
 async function addReviewToDB(restaurantId, data) {
   const res = await sb.post("reviews", { restaurant_id: restaurantId, nickname: data.nickname, rating: data.rating, comment: data.comment });
   return res[0];
+}
+
+async function deleteReviewFromDB(reviewId) {
+  await sb.del("reviews", `id=eq.${reviewId}`);
+}
+
+async function deleteRestaurantFromDB(restaurantId) {
+  await sb.del("reviews", `restaurant_id=eq.${restaurantId}`);
+  await sb.del("restaurants", `id=eq.${restaurantId}`);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -212,6 +225,24 @@ function App(){
     setRn("");setRr(0);setRc("");
   };
 
+  const deleteReview=async(reviewId)=>{
+    if(!window.confirm("이 리뷰를 삭제할까요?")) return;
+    try{
+      await deleteReviewFromDB(reviewId);
+      setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:r.reviews.filter(rv=>rv.id!==reviewId)}:r));
+    }catch(e){console.error(e)}
+  };
+
+  const deleteRestaurant=async()=>{
+    if(!selId) return;
+    if(!window.confirm("이 맛집과 리뷰를 모두 삭제할까요?")) return;
+    try{
+      await deleteRestaurantFromDB(selId);
+      setRests(prev=>prev.filter(r=>r.id!==selId));
+      nav("list");
+    }catch(e){console.error(e)}
+  };
+
   const sorted=[...rests].sort((a,b)=>{const aa=avg(a.reviews),bb=avg(b.reviews);return bb!==aa?bb-aa:b.reviews.length-a.reviews.length});
 
   if(loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif",color:"var(--neutral-400)",fontSize:15}}>불러오는 중...</div>;
@@ -288,7 +319,10 @@ function App(){
                 {sel.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"3px 10px",borderRadius:100,display:"inline-block",marginBottom:10}}>{sel.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{sel.address}</p>
                 {sel.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>{sel.phone}</p>}
-                <a href={sel.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>카카오맵에서 보기</a>
+                <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+                  <a href={sel.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>카카오맵에서 보기</a>
+                  <button className="btn-secondary" style={{padding:"8px 14px",fontSize:13,color:"#C62828",borderColor:"#F0C7C7",background:"#FFF6F6"}} onClick={deleteRestaurant}>맛집 삭제</button>
+                </div>
               </div>
               <div style={{textAlign:"center",padding:"20px 28px",background:"linear-gradient(135deg,var(--brand-bg),#FFF0E8)",borderRadius:"var(--radius-lg)"}}>
                 <div style={{fontSize:42,fontWeight:900,color:"var(--brand)",letterSpacing:"-.04em",lineHeight:1}}>{sel.reviews.length?avg(sel.reviews).toFixed(1):"—"}</div>
@@ -321,7 +355,10 @@ function App(){
                     <div style={{width:34,height:34,borderRadius:"50%",background:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},45%,88%)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},40%,40%)`}}>{rv.nickname[0]}</div>
                     <div><div style={{fontSize:14,fontWeight:600,color:"var(--neutral-800)"}}>{rv.nickname}</div><div style={{fontSize:12,color:"var(--neutral-400)"}}>{rv.createdAt}</div></div>
                   </div>
-                  <Stars rating={rv.rating} size={14}/>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <Stars rating={rv.rating} size={14}/>
+                    <button className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"#C62828",borderColor:"#F0C7C7",background:"#FFF6F6"}} onClick={()=>deleteReview(rv.id)}>삭제</button>
+                  </div>
                 </div>
                 <p style={{fontSize:15,color:"var(--neutral-700)",lineHeight:1.6,letterSpacing:"-.02em"}}>{rv.comment}</p>
               </div>)}
