@@ -39,8 +39,6 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);min-height:100vh
 <div id="root"></div>
 
 <!-- 카카오 JS SDK -->
-<script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
-
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -57,10 +55,6 @@ const KAKAO_JS_KEY = "f9808cf4bbd88596818153811b814a67";           // 카카오 
 const USE_DB = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const USE_KAKAO = !!KAKAO_JS_KEY;
 
-// 카카오 SDK 초기화
-if(USE_KAKAO && window.Kakao && !window.Kakao.isInitialized()){
-  window.Kakao.init(KAKAO_JS_KEY);
-}
 
 // ═══════════════════════════════════════════════════════════
 // Supabase 간이 클라이언트
