@@ -99,7 +99,7 @@ async function addReviewToDB(restaurantId, data) {
 // ═══════════════════════════════════════════════════════════
 const kakaoSearch = (query) => {
   return new Promise((resolve) => {
-    if(!USE_KAKAO || !window.Kakao?.isInitialized()){
+    if(!window.kakao?.maps?.services){
       resolve([]);
       return;
     }
