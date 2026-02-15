@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -7,148 +7,166 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 <link rel="icon" href="./favicon.ico" />
 <style>
-:root{--brand:#D4603A;--brand-light:#F2A07B;--brand-dark:#A3412A;--brand-bg:#FFF5EF;--bg:#FAF7F4;--surface:#FFF;--neutral-50:#FAFAF9;--neutral-100:#F5F4F2;--neutral-200:#E5E2DE;--neutral-300:#D1CCC5;--neutral-400:#A9A29A;--neutral-500:#7C7670;--neutral-600:#5C5650;--neutral-700:#44403A;--neutral-800:#2C2924;--neutral-900:#1A1816;--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--shadow-sm:0 1px 3px rgba(26,24,22,.04),0 1px 2px rgba(26,24,22,.03);--shadow-md:0 4px 16px rgba(26,24,22,.06),0 2px 4px rgba(26,24,22,.04);--shadow-lg:0 12px 40px rgba(26,24,22,.08),0 4px 12px rgba(26,24,22,.04);--shadow-hover:0 8px 30px rgba(212,96,58,.12),0 4px 8px rgba(26,24,22,.06);--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
+/* ═══════════════════════════════════════════
+   DARK THEME  — MD 스펙 기준
+   primary:#00FF4D  accent:#00FF4D
+   bg:#000  card:#0A0A0A  popover:#0F0F0F
+   ═══════════════════════════════════════════ */
+[data-theme="dark"]{
+  --brand:#00FF4D;--brand-light:#33FF85;--brand-dark:#2FE861;
+  --brand-bg:rgba(0,255,77,.08);
+  --bg:#000;--surface:#0A0A0A;--popover:#0F0F0F;
+  --neutral-50:#111;--neutral-100:#1A1A1A;--neutral-200:#1F1F1F;
+  --neutral-300:#2A2A2A;--neutral-400:#888;--neutral-500:#999;
+  --neutral-600:#AAA;--neutral-700:#CCC;--neutral-800:#E0E0E0;--neutral-900:#FFF;
+  --header-bg:rgba(0,0,0,.85);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.03);
+  --shadow-md:0 4px 16px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
+  --shadow-hover:0 8px 30px rgba(0,255,77,.12),0 0 0 1px rgba(0,255,77,.15);
+  --btn-fg:#000;
+  --badge-bg:rgba(0,255,77,.1);--badge-color:#00FF4D;
+  --empty-grad:linear-gradient(180deg,#0A0A0A,#0F0F0F);
+  --score-low:#AAA;
+  --av-bg:18%;--av-fg:65%;
+  --del-c:#FF3B30;--del-bc:#3A1515;--del-bg:rgba(255,59,48,.08);
+  --accent-grad:linear-gradient(135deg,var(--brand-bg),rgba(0,255,77,.04));
+  --pick-bc:rgba(0,255,77,.2);
+  --focus:rgba(0,255,77,.15);--glow:rgba(0,255,77,.3);
+  --ring:#00FF4D
+}
+
+/* ═══════════════════════════════════════════
+   LIGHT THEME  — 그린 계열 라이트 변환
+   primary 명도를 낮춰 가독성 확보
+   ═══════════════════════════════════════════ */
+[data-theme="light"]{
+  --brand:#00B341;--brand-light:#33D46A;--brand-dark:#009636;
+  --brand-bg:rgba(0,179,65,.06);
+  --bg:#FFFFFF;--surface:#FFFFFF;--popover:#FFFFFF;
+  --neutral-50:#F5F7F5;--neutral-100:#EAEDEB;--neutral-200:#D4DAD6;
+  --neutral-300:#BBC4BD;--neutral-400:#8A9A8E;--neutral-500:#6B7B6F;
+  --neutral-600:#4D5C50;--neutral-700:#3A4A3D;--neutral-800:#252E27;--neutral-900:#111714;
+  --header-bg:rgba(255,255,255,.88);
+  --shadow-sm:0 1px 3px rgba(0,40,10,.05),0 1px 2px rgba(0,40,10,.03);
+  --shadow-md:0 4px 16px rgba(0,40,10,.07),0 2px 4px rgba(0,40,10,.04);
+  --shadow-lg:0 12px 40px rgba(0,40,10,.09),0 4px 12px rgba(0,40,10,.05);
+  --shadow-hover:0 8px 30px rgba(0,179,65,.12),0 4px 8px rgba(0,40,10,.06);
+  --btn-fg:#FFF;
+  --badge-bg:rgba(0,179,65,.1);--badge-color:#009636;
+  --empty-grad:linear-gradient(180deg,#FFFFFF,#F5F7F5);
+  --score-low:#6B7B6F;
+  --av-bg:88%;--av-fg:35%;
+  --del-c:#D32F2F;--del-bc:#F0C7C7;--del-bg:#FFF6F6;
+  --accent-grad:linear-gradient(135deg,var(--brand-bg),rgba(0,179,65,.04));
+  --pick-bc:rgba(0,179,65,.25);
+  --focus:rgba(0,179,65,.12);--glow:rgba(0,179,65,.25);
+  --ring:#00B341
+}
+
+:root{--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);min-height:100vh}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);min-height:100vh;color:var(--neutral-800);transition:background .3s,color .3s}
 #root{min-height:100vh}
-.page-enter{opacity:1;transform:translateY(0);transition:all .35s cubic-bezier(.22,1,.36,1)}
-.page-exit{opacity:0;transform:translateY(12px)}
-.card-item{transition:all .3s cubic-bezier(.22,1,.36,1);cursor:pointer}
-.card-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover)}
-.btn-primary{background:var(--brand);color:#fff;border:none;padding:14px 32px;border-radius:var(--radius-md);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
-.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(212,96,58,.3)}
-.btn-primary:disabled{background:var(--neutral-300);cursor:not-allowed;transform:none;box-shadow:none}
-.btn-secondary{background:transparent;color:var(--neutral-600);border:1.5px solid var(--neutral-200);padding:12px 28px;border-radius:var(--radius-md);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-weight:500;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
+.page-enter{opacity:1;transform:translateY(0);transition:all .35s cubic-bezier(.22,1,.36,1)}.page-exit{opacity:0;transform:translateY(12px)}
+.card-item{transition:all .3s cubic-bezier(.22,1,.36,1);cursor:pointer}.card-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover)}
+.btn-primary{background:var(--brand);color:var(--btn-fg);border:none;padding:14px 32px;border-radius:var(--radius-md);font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 4px 12px var(--glow)}
+.btn-primary:disabled{background:var(--neutral-300);color:var(--neutral-400);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:transparent;color:var(--neutral-600);border:1.5px solid var(--neutral-200);padding:12px 28px;border-radius:var(--radius-md);font-family:inherit;font-weight:500;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
 .btn-secondary:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
-.input-field{width:100%;padding:14px 18px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-md);font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:15px;color:var(--neutral-800);background:var(--surface);transition:all .2s;outline:none;letter-spacing:-.02em}
-.input-field::placeholder{color:var(--neutral-400)}
-.input-field:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(212,96,58,.1)}
+.input-field{width:100%;padding:14px 18px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-md);font-family:inherit;font-size:15px;color:var(--neutral-800);background:var(--popover);transition:all .2s;outline:none;letter-spacing:-.02em}
+.input-field::placeholder{color:var(--neutral-400)}.input-field:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--focus)}
 .stagger-item{opacity:0;transform:translateY(16px);animation:fadeUp .5s cubic-bezier(.22,1,.36,1) forwards}
-@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
-@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}@keyframes spin{to{transform:rotate(360deg)}}
 .review-item{animation:slideDown .3s ease forwards}
-.search-item{padding:16px 20px;cursor:pointer;transition:all .15s;border-bottom:1px solid var(--neutral-100)}
-.search-item:hover{background:var(--brand-bg)}
-.search-item:last-child{border-bottom:none}
+.search-item{padding:16px 20px;cursor:pointer;transition:all .15s;border-bottom:1px solid var(--neutral-100)}.search-item:hover{background:var(--brand-bg)}.search-item:last-child{border-bottom:none}
 .tag{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:100px;font-size:12px;font-weight:600;letter-spacing:-.02em}
+.theme-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--neutral-200);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--neutral-500);transition:all .2s;padding:0;flex-shrink:0}.theme-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
 @media(max-width:640px){.responsive-grid{grid-template-columns:1fr!important}.hero-title{font-size:28px!important}.container-main{padding:0 16px!important}}
 </style>
 </head>
 <body>
 <div id="root"></div>
-
-<!-- 카카오 JS SDK -->
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel">
-const {useState,useEffect,useRef} = React;
+const {useState,useEffect,useRef}=React;
 
 // ═══════════════════════════════════════════════════════════
 // CONFIG — 여기에 키를 넣으세요
 // ═══════════════════════════════════════════════════════════
-const SUPABASE_URL = "https://wxlqnlkxxddoszcoypbn.supabase.co";           // 예: "https://abcdefg.supabase.co"
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bHFubGt4eGRkb3N6Y295cGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzkwNTksImV4cCI6MjA4NjU1NTA1OX0.Dmad5ZyA0wqtWAMg7q--KzW8i8_WBQMDT2364oPFOic";      // 예: "eyJhbGciOiJIUz..."
-const KAKAO_JS_KEY = "f9808cf4bbd88596818153811b814a67";           // 카카오 JavaScript 키 (REST 키 아님!)
-
-const USE_KAKAO = !!KAKAO_JS_KEY;
-
+const SUPABASE_URL="https://wxlqnlkxxddoszcoypbn.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind4bHFubGt4eGRkb3N6Y295cGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzkwNTksImV4cCI6MjA4NjU1NTA1OX0.Dmad5ZyA0wqtWAMg7q--KzW8i8_WBQMDT2364oPFOic";
+const KAKAO_JS_KEY="f9808cf4bbd88596818153811b814a67";
+const USE_KAKAO=!!KAKAO_JS_KEY;
 
 // ═══════════════════════════════════════════════════════════
 // Supabase 간이 클라이언트
 // ═══════════════════════════════════════════════════════════
-const sb = {
-  headers: { "apikey": SUPABASE_ANON_KEY, "Authorization": `Bearer ${SUPABASE_ANON_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" },
-  async get(table, params = "") {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { headers: this.headers });
-    return r.json();
-  },
-  async post(table, body) {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, { method: "POST", headers: this.headers, body: JSON.stringify(body) });
-    return r.json();
-  },
-  async del(table, params = "") {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { method: "DELETE", headers: this.headers });
-    return r.json();
-  }
+const sb={
+  headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":`Bearer ${SUPABASE_ANON_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"},
+  async get(t,p=""){return(await fetch(`${SUPABASE_URL}/rest/v1/${t}?${p}`,{headers:this.headers})).json()},
+  async post(t,b){return(await fetch(`${SUPABASE_URL}/rest/v1/${t}`,{method:"POST",headers:this.headers,body:JSON.stringify(b)})).json()},
+  async del(t,p=""){return(await fetch(`${SUPABASE_URL}/rest/v1/${t}?${p}`,{method:"DELETE",headers:this.headers})).json()}
 };
 
-async function loadFromDB() {
-  const restaurants = await sb.get("restaurants", "order=created_at.desc");
-  const reviews = await sb.get("reviews", "order=created_at.desc");
-  return restaurants.map(r => ({
-    id: r.id, name: r.name, address: r.address, category: r.category,
-    phone: r.phone, mapLink: r.map_link,
-    reviews: reviews.filter(rv => rv.restaurant_id === r.id).map(rv => ({
-      id: rv.id, nickname: rv.nickname, rating: rv.rating,
-      comment: rv.comment, createdAt: rv.created_at.slice(0, 10)
+async function loadFromDB(){
+  const restaurants=await sb.get("restaurants","order=created_at.desc");
+  const reviews=await sb.get("reviews","order=created_at.desc");
+  return restaurants.map(r=>({
+    id:r.id,name:r.name,address:r.address,category:r.category,
+    phone:r.phone,mapLink:r.map_link,
+    reviews:reviews.filter(rv=>rv.restaurant_id===r.id).map(rv=>({
+      id:rv.id,nickname:rv.nickname,rating:rv.rating,
+      comment:rv.comment,createdAt:rv.created_at.slice(0,10)
     }))
   }));
 }
-
-async function addRestaurantToDB(data) {
-  const res = await sb.post("restaurants", { name: data.name, address: data.address, category: data.category, phone: data.phone, map_link: data.mapLink });
-  return res[0];
-}
-
-async function addReviewToDB(restaurantId, data) {
-  const res = await sb.post("reviews", { restaurant_id: restaurantId, nickname: data.nickname, rating: data.rating, comment: data.comment });
-  return res[0];
-}
-
-async function deleteReviewFromDB(reviewId) {
-  await sb.del("reviews", `id=eq.${reviewId}`);
-}
-
-async function deleteRestaurantFromDB(restaurantId) {
-  await sb.del("reviews", `restaurant_id=eq.${restaurantId}`);
-  await sb.del("restaurants", `id=eq.${restaurantId}`);
-}
+async function addRestaurantToDB(d){return(await sb.post("restaurants",{name:d.name,address:d.address,category:d.category,phone:d.phone,map_link:d.mapLink}))[0]}
+async function addReviewToDB(rid,d){return(await sb.post("reviews",{restaurant_id:rid,nickname:d.nickname,rating:d.rating,comment:d.comment}))[0]}
+async function deleteReviewFromDB(id){await sb.del("reviews",`id=eq.${id}`)}
+async function deleteRestaurantFromDB(id){await sb.del("reviews",`restaurant_id=eq.${id}`);await sb.del("restaurants",`id=eq.${id}`)}
 
 // ═══════════════════════════════════════════════════════════
 // 카카오 JS SDK 키워드 검색
 // ═══════════════════════════════════════════════════════════
-const kakaoSearch = (query) => {
-  return new Promise((resolve) => {
-    if(!window.kakao?.maps?.services){
-      resolve([]);
-      return;
-    }
-    const ps = new window.kakao.maps.services.Places();
-    ps.keywordSearch(query, (data, status) => {
-      if(status === window.kakao.maps.services.Status.OK){
-        const filtered = data.filter(p => p.category_group_code === "FD6" || p.category_name?.includes("음식점"));
-        resolve(filtered.length > 0 ? filtered.slice(0, 8) : data.slice(0, 8));
-      } else {
-        resolve([]);
-      }
-    }, { category_group_code: "FD6", size: 10 });
-  });
-};
+const kakaoSearch=(q)=>new Promise(res=>{
+  if(!window.kakao?.maps?.services){res([]);return}
+  const ps=new window.kakao.maps.services.Places();
+  ps.keywordSearch(q,(d,s)=>{
+    if(s===window.kakao.maps.services.Status.OK){
+      const f=d.filter(p=>p.category_group_code==="FD6"||p.category_name?.includes("음식점"));
+      res(f.length>0?f.slice(0,8):d.slice(0,8))
+    }else res([])
+  },{category_group_code:"FD6",size:10})
+});
 
 // ═══════════════════════════════════════════════════════════
 // 공통 컴포넌트
 // ═══════════════════════════════════════════════════════════
-const avg=(rv)=>rv.length?rv.reduce((s,r)=>s+r.rating,0)/rv.length:0;
-const exCat=(s)=>{if(!s)return"";const p=s.split(" > ");return p.length>1?p.slice(1).join(" > "):p[0]};
+const avg=rv=>rv.length?rv.reduce((s,r)=>s+r.rating,0)/rv.length:0;
+const exCat=s=>{if(!s)return"";const p=s.split(" > ");return p.length>1?p.slice(1).join(" > "):p[0]};
 
 const Stars=({rating,size=18})=>{
   const f=Math.floor(rating),h=rating-f>=.25&&rating-f<.75,e=5-f-(h?1:0);
   return React.createElement("span",{style:{display:"inline-flex",gap:2,alignItems:"center"}},[
     ...Array(f).fill(0).map((_,i)=>React.createElement("svg",{key:"f"+i,width:size,height:size,viewBox:"0 0 24 24",fill:"var(--brand)",stroke:"none"},React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"}))),
-    h&&React.createElement("svg",{key:"h",width:size,height:size,viewBox:"0 0 24 24"},React.createElement("defs",null,React.createElement("linearGradient",{id:"hs"},React.createElement("stop",{offset:"50%",stopColor:"var(--brand)"}),React.createElement("stop",{offset:"50%",stopColor:"var(--neutral-200)"}))),React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",fill:"url(#hs)"})),
-    ...Array(e).fill(0).map((_,i)=>React.createElement("svg",{key:"e"+i,width:size,height:size,viewBox:"0 0 24 24",fill:"var(--neutral-200)",stroke:"none"},React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"}))),
+    h&&React.createElement("svg",{key:"h",width:size,height:size,viewBox:"0 0 24 24"},React.createElement("defs",null,React.createElement("linearGradient",{id:"hs"},React.createElement("stop",{offset:"50%",stopColor:"var(--brand)"}),React.createElement("stop",{offset:"50%",stopColor:"var(--neutral-300)"}))),React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",fill:"url(#hs)"})),
+    ...Array(e).fill(0).map((_,i)=>React.createElement("svg",{key:"e"+i,width:size,height:size,viewBox:"0 0 24 24",fill:"var(--neutral-300)",stroke:"none"},React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"}))),
   ].filter(Boolean));
 };
 
 const StarInput=({value,onChange})=>(
   <div style={{display:"flex",gap:6,cursor:"pointer"}}>
-    {[1,2,3,4,5].map(s=><svg key={s} width={28} height={28} viewBox="0 0 24 24" fill={s<=value?"var(--brand)":"var(--neutral-200)"} stroke="none" onClick={()=>onChange(s)} style={{transition:"transform .15s,fill .2s",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.transform="scale(1.2)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
+    {[1,2,3,4,5].map(s=><svg key={s} width={28} height={28} viewBox="0 0 24 24" fill={s<=value?"var(--brand)":"var(--neutral-300)"} stroke="none" onClick={()=>onChange(s)} style={{transition:"transform .15s,fill .2s",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.transform="scale(1.2)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
   </div>
 );
 
 const Pin=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>;
+const SunIcon=()=><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
+const MoonIcon=()=><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
 
 // ═══════════════════════════════════════════════════════════
 // Main App
@@ -170,134 +188,110 @@ function App(){
   const [rn,setRn]=useState("");
   const [rr,setRr]=useState(0);
   const [rc,setRc]=useState("");
+  const [theme,setTheme]=useState(()=>{try{return localStorage.getItem("matjip-theme")||"dark"}catch{return"dark"}});
   const sel=rests.find(r=>r.id===selId);
 
-  // 카카오 지도 SDK 로드 (JS 키 방식)
+  const toggleTheme=()=>{const n=theme==="dark"?"light":"dark";setTheme(n);document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("matjip-theme",n)}catch{}};
+
+  useEffect(()=>{document.documentElement.setAttribute("data-theme",theme)},[]);
+
+  // 카카오 지도 SDK 로드
   useEffect(()=>{
     if(!USE_KAKAO) return;
     const script=document.createElement("script");
     script.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
-    script.onload=()=>{
-      window.kakao.maps.load(()=>{ setKakaoReady(true); });
-    };
+    script.onload=()=>{window.kakao.maps.load(()=>{setKakaoReady(true)})};
     document.head.appendChild(script);
   },[]);
 
   // 초기 데이터 로드
   useEffect(()=>{
     (async()=>{
-      try {
-        const data=await loadFromDB();
-        setRests(data);
-      } catch(e){ console.error("DB load error:",e); setRests([]); }
-      setLoading(false);
-      setTimeout(()=>setMounted(true),100);
+      try{const data=await loadFromDB();setRests(data)}catch(e){console.error("DB load error:",e);setRests([])}
+      setLoading(false);setTimeout(()=>setMounted(true),100);
     })();
   },[]);
 
   const nav=(to,id=null)=>{setAnim(true);setTimeout(()=>{setView(to);setSelId(id);setAnim(false);if(to==="add"){setSq("");setSr([]);setSearched(false);setPicked(null)}window.scrollTo({top:0,behavior:"smooth"})},200)};
-
-  const doSearch=(v)=>{
-    setSq(v);setPicked(null);
-    if(timer.current)clearTimeout(timer.current);
-    if(v.trim().length<2){setSr([]);setSearched(false);return}
-    timer.current=setTimeout(async()=>{setSearching(true);const r=await kakaoSearch(v.trim());setSr(r);setSearched(true);setSearching(false)},400);
-  };
-
+  const doSearch=(v)=>{setSq(v);setPicked(null);if(timer.current)clearTimeout(timer.current);if(v.trim().length<2){setSr([]);setSearched(false);return}timer.current=setTimeout(async()=>{setSearching(true);const r=await kakaoSearch(v.trim());setSr(r);setSearched(true);setSearching(false)},400)};
   const pick=(p)=>{setPicked(p);setSr([]);setSq(p.place_name)};
 
   const addPlace=async()=>{
     if(!picked)return;
-    const newData = { name:picked.place_name, address:picked.road_address_name||picked.address_name, category:exCat(picked.category_name), phone:picked.phone||"", mapLink:picked.place_url||"https://map.kakao.com" };
-    try{
-      const row=await addRestaurantToDB(newData);
-      setRests(prev=>[{id:row.id,...newData,reviews:[]},...prev]);
-    }catch(e){console.error(e)}
+    const newData={name:picked.place_name,address:picked.road_address_name||picked.address_name,category:exCat(picked.category_name),phone:picked.phone||"",mapLink:picked.place_url||"https://map.kakao.com"};
+    try{const row=await addRestaurantToDB(newData);setRests(prev=>[{id:row.id,...newData,reviews:[]},...prev])}catch(e){console.error(e)}
     nav("list");
   };
 
   const addReview=async()=>{
     if(!rn.trim()||!rr||!rc.trim())return;
-    const newData = { nickname:rn.trim(), rating:rr, comment:rc.trim() };
-    try{
-      const row=await addReviewToDB(selId, newData);
-      setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:[{id:row.id,...newData,createdAt:row.created_at.slice(0,10)},...r.reviews]}:r));
-    }catch(e){console.error(e)}
+    const newData={nickname:rn.trim(),rating:rr,comment:rc.trim()};
+    try{const row=await addReviewToDB(selId,newData);setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:[{id:row.id,...newData,createdAt:row.created_at.slice(0,10)},...r.reviews]}:r))}catch(e){console.error(e)}
     setRn("");setRr(0);setRc("");
   };
 
   const deleteReview=async(reviewId)=>{
-    if(!window.confirm("이 리뷰를 삭제할까요?")) return;
-    try{
-      await deleteReviewFromDB(reviewId);
-      setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:r.reviews.filter(rv=>rv.id!==reviewId)}:r));
-    }catch(e){console.error(e)}
+    if(!window.confirm("이 리뷰를 삭제할까요?"))return;
+    try{await deleteReviewFromDB(reviewId);setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:r.reviews.filter(rv=>rv.id!==reviewId)}:r))}catch(e){console.error(e)}
   };
 
   const deleteRestaurant=async()=>{
-    if(!selId) return;
-    if(!window.confirm("이 맛집과 리뷰를 모두 삭제할까요?")) return;
-    try{
-      await deleteRestaurantFromDB(selId);
-      setRests(prev=>prev.filter(r=>r.id!==selId));
-      nav("list");
-    }catch(e){console.error(e)}
+    if(!selId||!window.confirm("이 맛집과 리뷰를 모두 삭제할까요?"))return;
+    try{await deleteRestaurantFromDB(selId);setRests(prev=>prev.filter(r=>r.id!==selId));nav("list")}catch(e){console.error(e)}
   };
 
   const sorted=[...rests].sort((a,b)=>{const aa=avg(a.reviews),bb=avg(b.reviews);return bb!==aa?bb-aa:b.reviews.length-a.reviews.length});
 
-  if(loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontFamily:"'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif",color:"var(--neutral-400)",fontSize:15}}>불러오는 중...</div>;
+  if(loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",color:"var(--neutral-400)",fontSize:15}}>불러오는 중...</div>;
 
   return(
-    <div style={{minHeight:"100vh",background:"var(--bg)",fontFamily:"'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif"}}>
+    <div style={{minHeight:"100vh",background:"var(--bg)",transition:"background .3s"}}>
 
-      {/* Header */}
-      <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(250,247,244,.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--neutral-200)"}}>
+      {/* ═══ Header ═══ */}
+      <header style={{position:"sticky",top:0,zIndex:50,background:"var(--header-bg)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--neutral-200)",transition:"background .3s,border-color .3s"}}>
         <div className="container-main" style={{maxWidth:960,margin:"0 auto",padding:"0 32px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontWeight:900,fontSize:22,color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>nav("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
+          <div style={{fontWeight:800,fontSize:22,color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>nav("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:"#E8F5E9",color:"#2E7D32"}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:"#4CAF50"}}/>
-              DB 연결됨
+            <button className="theme-btn" onClick={toggleTheme} aria-label="테마 전환">{theme==="dark"?<SunIcon/>:<MoonIcon/>}</button>
+            <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:"var(--badge-bg)",color:"var(--badge-color)"}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:"var(--badge-color)"}}/>DB 연결됨
             </div>
             <button className="btn-primary" style={{padding:"10px 22px",fontSize:14}} onClick={()=>nav("add")}>+ 맛집 등록</button>
           </div>
         </div>
       </header>
 
-      <main className={`container-main ${anim?"page-exit":"page-enter"}`} style={{maxWidth:960,margin:"0 auto",padding:"0 32px",paddingBottom:80}}>
+      <main className={`container-main ${anim?"page-exit":"page-enter"}`} style={{maxWidth:960,margin:"0 auto",padding:"0 32px",paddingBottom:120}}>
 
-        {/* LIST */}
+        {/* ═══ LIST ═══ */}
         {view==="list"&&<div>
           <div style={{padding:"var(--space-2xl) 0 var(--space-xl)",opacity:mounted?1:0,transform:mounted?"translateY(0)":"translateY(20px)",transition:"all .6s cubic-bezier(.22,1,.36,1)"}}>
-            <h1 className="hero-title" style={{fontSize:38,fontWeight:900,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>나만의 맛집을<br/><span style={{color:"var(--brand)"}}>기록</span>하고 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
+            <h1 className="hero-title" style={{fontSize:38,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>나만의 맛집을<br/><span style={{color:"var(--brand)"}}>기록</span>하고 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>카카오맵에서 검색해서 맛집을 등록하고, 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
-            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand-dark)"}}><Pin size={14}/>{rests.length}개 맛집</div>
+            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{rests.length}개 맛집</div>
             <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>{rests.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
 
           {rests.length===0?
-            <div style={{background:"linear-gradient(180deg,#FFF, #FFFBF8)",borderRadius:"var(--radius-xl)",padding:"56px 28px",textAlign:"center",border:"1px solid var(--neutral-200)",boxShadow:"var(--shadow-sm)"}}>
+            <div style={{background:"var(--empty-grad)",borderRadius:"var(--radius-xl)",padding:"56px 28px",textAlign:"center",border:"1px solid var(--neutral-200)",boxShadow:"var(--shadow-sm)"}}>
               <div style={{width:84,height:84,margin:"0 auto 18px",borderRadius:"50%",background:"var(--brand-bg)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:38}}>🍽️</div>
               <p style={{fontSize:22,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:10}}>등록된 맛집이 아직 없어요</p>
               <p style={{fontSize:14,color:"var(--neutral-500)",lineHeight:1.7,maxWidth:420,margin:"0 auto 24px"}}>지금 바로 맛집을 등록해보세요.</p>
-              <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
-                <button className="btn-primary" onClick={()=>nav("add")}>+ 첫 맛집 등록하기</button>
-              </div>
+              <button className="btn-primary" onClick={()=>nav("add")}>+ 첫 맛집 등록하기</button>
             </div>
           :
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
             {sorted.map((r,i)=>{const a=avg(r.reviews);return(
-              <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-100)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>nav("detail",r.id)}>
+              <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>nav("detail",r.id)}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1}}>
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
                     {r.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"2px 8px",borderRadius:100,display:"inline-block",marginBottom:4}}>{r.category}</span>}
                     <p style={{fontSize:13,color:"var(--neutral-400)",display:"flex",alignItems:"center",gap:4,marginTop:4}}><Pin size={13} color="var(--neutral-400)"/>{r.address}</p>
                   </div>
-                  {a>0&&<div style={{background:a>=4.5?"var(--brand)":a>=3.5?"var(--brand-light)":"var(--neutral-300)",color:a>=3.5?"#fff":"var(--neutral-700)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:16,fontWeight:800,minWidth:44,textAlign:"center"}}>{a.toFixed(1)}</div>}
+                  {a>0&&<div style={{background:a>=4.5?"var(--brand)":a>=3.5?"var(--brand-light)":"var(--neutral-300)",color:a>=3.5?"var(--btn-fg)":"var(--score-low)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:16,fontWeight:800,minWidth:44,textAlign:"center"}}>{a.toFixed(1)}</div>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}><Stars rating={a} size={16}/><span style={{fontSize:13,color:"var(--neutral-400)",fontWeight:500}}>리뷰 {r.reviews.length}개</span></div>
@@ -308,31 +302,32 @@ function App(){
           </div>}
         </div>}
 
-        {/* DETAIL */}
+        {/* ═══ DETAIL ═══ */}
         {view==="detail"&&sel&&<div>
           <div style={{padding:"var(--space-lg) 0 var(--space-md)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>nav("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
 
-          <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-100)",marginBottom:"var(--space-xl)"}}>
+          <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-200)",marginBottom:"var(--space-xl)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16}}>
               <div style={{flex:1,minWidth:200}}>
-                <h1 style={{fontSize:30,fontWeight:900,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{sel.name}</h1>
+                <h1 style={{fontSize:30,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{sel.name}</h1>
                 {sel.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"3px 10px",borderRadius:100,display:"inline-block",marginBottom:10}}>{sel.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{sel.address}</p>
                 {sel.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>{sel.phone}</p>}
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                   <a href={sel.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>카카오맵에서 보기</a>
-                  <button className="btn-secondary" style={{padding:"8px 14px",fontSize:13,color:"#C62828",borderColor:"#F0C7C7",background:"#FFF6F6"}} onClick={deleteRestaurant}>맛집 삭제</button>
+                  <button className="btn-secondary" style={{padding:"8px 14px",fontSize:13,color:"var(--del-c)",borderColor:"var(--del-bc)",background:"var(--del-bg)"}} onClick={deleteRestaurant}>맛집 삭제</button>
                 </div>
               </div>
-              <div style={{textAlign:"center",padding:"20px 28px",background:"linear-gradient(135deg,var(--brand-bg),#FFF0E8)",borderRadius:"var(--radius-lg)"}}>
-                <div style={{fontSize:42,fontWeight:900,color:"var(--brand)",lineHeight:1}}>{sel.reviews.length?avg(sel.reviews).toFixed(1):"—"}</div>
+              <div style={{textAlign:"center",padding:"20px 28px",background:"var(--accent-grad)",borderRadius:"var(--radius-lg)"}}>
+                <div style={{fontSize:42,fontWeight:800,color:"var(--brand)",lineHeight:1}}>{sel.reviews.length?avg(sel.reviews).toFixed(1):"—"}</div>
                 <Stars rating={avg(sel.reviews)} size={18}/>
                 <div style={{fontSize:13,color:"var(--neutral-500)",marginTop:6,fontWeight:500}}>리뷰 {sel.reviews.length}개</div>
               </div>
             </div>
           </div>
 
-          <div className="stagger-item" style={{animationDelay:".1s",background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-100)",marginBottom:"var(--space-xl)"}}>
+          {/* 리뷰 작성 */}
+          <div className="stagger-item" style={{animationDelay:".1s",background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",marginBottom:"var(--space-xl)"}}>
             <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 작성하기</h2>
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
@@ -344,20 +339,21 @@ function App(){
             </div>
           </div>
 
+          {/* 리뷰 목록 */}
           <div className="stagger-item" style={{animationDelay:".2s"}}>
             <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 {sel.reviews.length}개</h2>
             {sel.reviews.length===0?
               <div style={{background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-2xl) var(--space-lg)",textAlign:"center",border:"1px dashed var(--neutral-200)"}}><div style={{fontSize:40,marginBottom:12}}>📝</div><p style={{fontSize:15,color:"var(--neutral-400)",fontWeight:500}}>아직 리뷰가 없어요</p><p style={{fontSize:13,color:"var(--neutral-300)",marginTop:4}}>첫 번째 리뷰를 남겨보세요!</p></div>
             :<div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {sel.reviews.map((rv,i)=><div key={rv.id} className="review-item" style={{animationDelay:`${i*.06}s`,background:"var(--surface)",borderRadius:"var(--radius-md)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-100)"}}>
+              {sel.reviews.map((rv,i)=><div key={rv.id} className="review-item" style={{animationDelay:`${i*.06}s`,background:"var(--surface)",borderRadius:"var(--radius-md)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:34,height:34,borderRadius:"50%",background:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},45%,88%)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},40%,40%)`}}>{rv.nickname[0]}</div>
+                    <div style={{width:34,height:34,borderRadius:"50%",background:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},50%,var(--av-bg))`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},55%,var(--av-fg))`}}>{rv.nickname[0]}</div>
                     <div><div style={{fontSize:14,fontWeight:600,color:"var(--neutral-800)"}}>{rv.nickname}</div><div style={{fontSize:12,color:"var(--neutral-400)"}}>{rv.createdAt}</div></div>
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <Stars rating={rv.rating} size={14}/>
-                    <button className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"#C62828",borderColor:"#F0C7C7",background:"#FFF6F6"}} onClick={()=>deleteReview(rv.id)}>삭제</button>
+                    <button className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"var(--del-c)",borderColor:"var(--del-bc)",background:"var(--del-bg)"}} onClick={()=>deleteReview(rv.id)}>삭제</button>
                   </div>
                 </div>
                 <p style={{fontSize:15,color:"var(--neutral-700)",lineHeight:1.6,letterSpacing:"-.02em"}}>{rv.comment}</p>
@@ -366,15 +362,15 @@ function App(){
           </div>
         </div>}
 
-        {/* ADD */}
+        {/* ═══ ADD ═══ */}
         {view==="add"&&<div style={{maxWidth:600,margin:"0 auto"}}>
           <div style={{padding:"var(--space-xl) 0 var(--space-lg)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>nav("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
 
-          <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-100)"}}>
+          <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-200)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:8}}>
-              <h1 style={{fontSize:26,fontWeight:900,color:"var(--neutral-900)"}}>맛집 검색 & 등록</h1>
-              <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:kakaoReady?"#E8F5E9":"var(--neutral-100)",color:kakaoReady?"#2E7D32":"var(--neutral-500)"}}>
-                <div style={{width:6,height:6,borderRadius:"50%",background:kakaoReady?"#4CAF50":"var(--neutral-400)"}}/>
+              <h1 style={{fontSize:26,fontWeight:800,color:"var(--neutral-900)",}}>맛집 검색 & 등록</h1>
+              <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:kakaoReady?"var(--badge-bg)":"var(--neutral-100)",color:kakaoReady?"var(--badge-color)":"var(--neutral-500)"}}>
+                <div style={{width:6,height:6,borderRadius:"50%",background:kakaoReady?"var(--badge-color)":"var(--neutral-400)"}}/>
                 {kakaoReady?"카카오 검색 연동됨":USE_KAKAO?"카카오 로딩중...":"카카오 미연결"}
               </div>
             </div>
@@ -386,10 +382,10 @@ function App(){
                   <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 </div>
                 <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder={kakaoReady?"맛집 이름을 검색하세요 (예: 강남 맛집, 홍대 파스타)":"카카오 API 키를 먼저 설정해주세요"} value={sq} onChange={e=>doSearch(e.target.value)} disabled={!kakaoReady}/>
-                {searching&&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-200)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
+                {searching&&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-300)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
               </div>
 
-              {sr.length>0&&!picked&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--surface)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",maxHeight:360,overflowY:"auto"}}>
+              {sr.length>0&&!picked&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--popover)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",maxHeight:360,overflowY:"auto"}}>
                 {sr.map((p,i)=><div key={i} className="search-item" onClick={()=>pick(p)}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                     <div style={{flex:1}}>
@@ -405,12 +401,12 @@ function App(){
               </div>}
 
               {searched&&sr.length===0&&sq.trim().length>=2&&!picked&&!searching&&
-                <div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--surface)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",padding:"24px 20px",textAlign:"center"}}>
+                <div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--popover)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",padding:"24px 20px",textAlign:"center"}}>
                   <p style={{fontSize:14,color:"var(--neutral-400)"}}>검색 결과가 없어요</p><p style={{fontSize:13,color:"var(--neutral-300)",marginTop:4}}>다른 키워드로 검색해보세요</p>
                 </div>}
             </div>
 
-            {picked&&<div style={{background:"linear-gradient(135deg,var(--brand-bg),#FFF0E8)",border:"1.5px solid var(--brand-light)",borderRadius:"var(--radius-lg)",padding:"20px 24px",animation:"fadeUp .3s ease forwards",marginBottom:20}}>
+            {picked&&<div style={{background:"var(--accent-grad)",border:`1.5px solid var(--pick-bc)`,borderRadius:"var(--radius-lg)",padding:"20px 24px",animation:"fadeUp .3s ease forwards",marginBottom:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                 <div style={{flex:1}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><Pin size={20} color="var(--brand)"/><span style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em"}}>{picked.place_name}</span></div>
@@ -445,7 +441,7 @@ function App(){
         </div>}
       </main>
 
-      <footer style={{textAlign:"center",padding:"var(--space-xl) var(--space-lg)",borderTop:"1px solid var(--neutral-100)",fontSize:13,color:"var(--neutral-400)"}}>맛집기록 — 나만의 맛집 리뷰 서비스</footer>
+      <footer style={{textAlign:"center",padding:"var(--space-xl) var(--space-lg)",borderTop:"1px solid var(--neutral-200)",fontSize:13,color:"var(--neutral-400)",transition:"border-color .3s,color .3s"}}>맛집기록 — 나만의 맛집 리뷰 서비스</footer>
     </div>
   );
 }
