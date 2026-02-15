@@ -66,6 +66,8 @@
 
 :root{--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
 *{box-sizing:border-box;margin:0;padding:0}
+html{scrollbar-gutter:stable}
+body{overflow-y:scroll}
 body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);min-height:100vh;color:var(--neutral-800);transition:background .3s,color .3s}
 #root{min-height:100vh}
 .page-enter{opacity:1;transform:translateY(0);transition:all .35s cubic-bezier(.22,1,.36,1)}.page-exit{opacity:0;transform:translateY(12px)}
