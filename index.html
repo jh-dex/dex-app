@@ -254,7 +254,7 @@ function App(){
       {/* Header */}
       <header style={{position:"sticky",top:0,zIndex:50,background:"rgba(250,247,244,.85)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--neutral-200)"}}>
         <div className="container-main" style={{maxWidth:960,margin:"0 auto",padding:"0 32px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontWeight:900,fontSize:22,letterSpacing:"-.04em",color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>nav("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
+          <div style={{fontWeight:900,fontSize:22,color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>nav("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:"#E8F5E9",color:"#2E7D32"}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:"#4CAF50"}}/>
@@ -270,7 +270,7 @@ function App(){
         {/* LIST */}
         {view==="list"&&<div>
           <div style={{padding:"var(--space-2xl) 0 var(--space-xl)",opacity:mounted?1:0,transform:mounted?"translateY(0)":"translateY(20px)",transition:"all .6s cubic-bezier(.22,1,.36,1)"}}>
-            <h1 className="hero-title" style={{fontSize:38,fontWeight:900,color:"var(--neutral-900)",letterSpacing:"-.04em",lineHeight:1.25,marginBottom:12}}>나만의 맛집을<br/><span style={{color:"var(--brand)"}}>기록</span>하고 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
+            <h1 className="hero-title" style={{fontSize:38,fontWeight:900,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>나만의 맛집을<br/><span style={{color:"var(--brand)"}}>기록</span>하고 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>카카오맵에서 검색해서 맛집을 등록하고, 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
@@ -315,7 +315,7 @@ function App(){
           <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-100)",marginBottom:"var(--space-xl)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16}}>
               <div style={{flex:1,minWidth:200}}>
-                <h1 style={{fontSize:30,fontWeight:900,color:"var(--neutral-900)",letterSpacing:"-.04em",lineHeight:1.2,marginBottom:8}}>{sel.name}</h1>
+                <h1 style={{fontSize:30,fontWeight:900,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{sel.name}</h1>
                 {sel.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"3px 10px",borderRadius:100,display:"inline-block",marginBottom:10}}>{sel.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{sel.address}</p>
                 {sel.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>{sel.phone}</p>}
@@ -325,7 +325,7 @@ function App(){
                 </div>
               </div>
               <div style={{textAlign:"center",padding:"20px 28px",background:"linear-gradient(135deg,var(--brand-bg),#FFF0E8)",borderRadius:"var(--radius-lg)"}}>
-                <div style={{fontSize:42,fontWeight:900,color:"var(--brand)",letterSpacing:"-.04em",lineHeight:1}}>{sel.reviews.length?avg(sel.reviews).toFixed(1):"—"}</div>
+                <div style={{fontSize:42,fontWeight:900,color:"var(--brand)",lineHeight:1}}>{sel.reviews.length?avg(sel.reviews).toFixed(1):"—"}</div>
                 <Stars rating={avg(sel.reviews)} size={18}/>
                 <div style={{fontSize:13,color:"var(--neutral-500)",marginTop:6,fontWeight:500}}>리뷰 {sel.reviews.length}개</div>
               </div>
@@ -372,7 +372,7 @@ function App(){
 
           <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-100)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:8}}>
-              <h1 style={{fontSize:26,fontWeight:900,color:"var(--neutral-900)",letterSpacing:"-.04em"}}>맛집 검색 & 등록</h1>
+              <h1 style={{fontSize:26,fontWeight:900,color:"var(--neutral-900)"}}>맛집 검색 & 등록</h1>
               <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:kakaoReady?"#E8F5E9":"var(--neutral-100)",color:kakaoReady?"#2E7D32":"var(--neutral-500)"}}>
                 <div style={{width:6,height:6,borderRadius:"50%",background:kakaoReady?"#4CAF50":"var(--neutral-400)"}}/>
                 {kakaoReady?"카카오 검색 연동됨":USE_KAKAO?"카카오 로딩중...":"카카오 미연결"}
