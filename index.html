@@ -73,7 +73,8 @@ body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto
 .page-enter{opacity:1;transform:translateY(0);transition:all .35s cubic-bezier(.22,1,.36,1)}.page-exit{opacity:0;transform:translateY(12px)}
 .card-item{transition:all .3s cubic-bezier(.22,1,.36,1);cursor:pointer}.card-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover)}
 .btn-primary{background:var(--brand);color:var(--btn-fg);border:none;padding:14px 32px;border-radius:var(--radius-md);font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
-.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 4px 12px var(--glow)}
+@media (hover: hover){.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 4px 12px var(--glow)}}
+.btn-primary:active{background:var(--brand-dark)}
 .btn-primary:disabled{background:var(--neutral-300);color:var(--neutral-400);cursor:not-allowed;transform:none;box-shadow:none}
 .btn-secondary{background:transparent;color:var(--neutral-600);border:1.5px solid var(--neutral-200);padding:12px 28px;border-radius:var(--radius-md);font-family:inherit;font-weight:500;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
 .btn-secondary:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
@@ -366,6 +367,13 @@ const SECTION_STYLE = {
   ...CARD_STYLE,
   boxShadow: "var(--shadow-sm)",
   marginBottom: "var(--space-xl)"
+};
+
+const REVIEW_SECTION_STYLE = {
+  ...CARD_STYLE,
+  boxShadow: "var(--shadow-sm)",
+  marginBottom: "var(--space-xl)",
+  padding: "var(--space-lg)"
 };
 
 const LABEL_STYLE = {
@@ -706,9 +714,6 @@ function App(){
           <div style={{fontWeight:800,fontSize:22,color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>navigateTo("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <button className="theme-btn" onClick={toggleTheme} aria-label="테마 전환">{theme==="dark"?<SunIcon/>:<MoonIcon/>}</button>
-            <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:"var(--badge-bg)",color:"var(--badge-color)"}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:"var(--badge-color)"}}/>DB 연결됨
-            </div>
             <button className="btn-primary" style={{padding:"10px 22px",fontSize:14}} onClick={()=>navigateTo("add")}>+ 맛집 등록</button>
           </div>
         </div>
@@ -780,7 +785,7 @@ function App(){
           </div>
 
           {/* 리뷰 작성 */}
-          <div className="stagger-item" style={{...SECTION_STYLE, animationDelay: ".1s"}}>
+          <div className="stagger-item" style={{...REVIEW_SECTION_STYLE, animationDelay: ".1s"}}>
             <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 작성하기</h2>
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
