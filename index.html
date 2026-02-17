@@ -96,7 +96,7 @@ main.container-main{padding-bottom:96px!important}
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel">
-const {useState,useEffect,useRef}=React;
+const {useState, useEffect, useRef, useMemo, useCallback} = React;
 
 // ═══════════════════════════════════════════════════════════
 // CONFIG — 여기에 키를 넣으세요
@@ -109,49 +109,148 @@ const USE_KAKAO=!!KAKAO_JS_KEY;
 // ═══════════════════════════════════════════════════════════
 // Supabase 간이 클라이언트
 // ═══════════════════════════════════════════════════════════
-const sb={
-  headers:{"apikey":SUPABASE_ANON_KEY,"Authorization":`Bearer ${SUPABASE_ANON_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"},
-  async get(t,p=""){return(await fetch(`${SUPABASE_URL}/rest/v1/${t}?${p}`,{headers:this.headers})).json()},
-  async post(t,b){return(await fetch(`${SUPABASE_URL}/rest/v1/${t}`,{method:"POST",headers:this.headers,body:JSON.stringify(b)})).json()},
-  async del(t,p=""){return(await fetch(`${SUPABASE_URL}/rest/v1/${t}?${p}`,{method:"DELETE",headers:this.headers})).json()}
+const supabase = {
+  headers: {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  },
+
+  async get(table, params = "") {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
+      headers: this.headers
+    });
+    return response.json();
+  },
+
+  async post(table, body) {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify(body)
+    });
+    return response.json();
+  },
+
+  async delete(table, params = "") {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, {
+      method: "DELETE",
+      headers: this.headers
+    });
+    return response.json();
+  }
 };
 
-async function loadFromDB(){
-  const restaurants=await sb.get("restaurants","order=created_at.desc");
-  const reviews=await sb.get("reviews","order=created_at.desc");
-  return restaurants.map(r=>({
-    id:r.id,name:r.name,address:r.address,category:r.category,
-    phone:r.phone,mapLink:r.map_link,
-    reviews:reviews.filter(rv=>rv.restaurant_id===r.id).map(rv=>({
-      id:rv.id,nickname:rv.nickname,rating:rv.rating,
-      comment:rv.comment,createdAt:rv.created_at.slice(0,10)
-    }))
+// DB에서 모든 맛집과 리뷰 로드
+async function loadFromDB() {
+  const restaurants = await supabase.get("restaurants", "order=created_at.desc");
+  const reviews = await supabase.get("reviews", "order=created_at.desc");
+
+  return restaurants.map(restaurant => ({
+    id: restaurant.id,
+    name: restaurant.name,
+    address: restaurant.address,
+    category: restaurant.category,
+    phone: restaurant.phone,
+    mapLink: restaurant.map_link,
+    reviews: reviews
+      .filter(review => review.restaurant_id === restaurant.id)
+      .map(review => ({
+        id: review.id,
+        nickname: review.nickname,
+        rating: review.rating,
+        comment: review.comment,
+        createdAt: review.created_at.slice(0, 10)
+      }))
   }));
 }
-async function addRestaurantToDB(d){return(await sb.post("restaurants",{name:d.name,address:d.address,category:d.category,phone:d.phone,map_link:d.mapLink}))[0]}
-async function addReviewToDB(rid,d){return(await sb.post("reviews",{restaurant_id:rid,nickname:d.nickname,rating:d.rating,comment:d.comment}))[0]}
-async function deleteReviewFromDB(id){await sb.del("reviews",`id=eq.${id}`)}
-async function deleteRestaurantFromDB(id){await sb.del("reviews",`restaurant_id=eq.${id}`);await sb.del("restaurants",`id=eq.${id}`)}
+
+// 맛집 DB에 추가
+async function addRestaurantToDB(data) {
+  const result = await supabase.post("restaurants", {
+    name: data.name,
+    address: data.address,
+    category: data.category,
+    phone: data.phone,
+    map_link: data.mapLink
+  });
+  return result[0];
+}
+
+// 리뷰 DB에 추가
+async function addReviewToDB(restaurantId, data) {
+  const result = await supabase.post("reviews", {
+    restaurant_id: restaurantId,
+    nickname: data.nickname,
+    rating: data.rating,
+    comment: data.comment
+  });
+  return result[0];
+}
+
+// 리뷰 DB에서 삭제
+async function deleteReviewFromDB(id) {
+  await supabase.delete("reviews", `id=eq.${id}`);
+}
+
+// 맛집과 관련 리뷰 DB에서 삭제
+async function deleteRestaurantFromDB(id) {
+  await supabase.delete("reviews", `restaurant_id=eq.${id}`);
+  await supabase.delete("restaurants", `id=eq.${id}`);
+}
 
 // ═══════════════════════════════════════════════════════════
 // 카카오 JS SDK 키워드 검색
 // ═══════════════════════════════════════════════════════════
-const kakaoSearch=(q)=>new Promise(res=>{
-  if(!window.kakao?.maps?.services){res([]);return}
-  const ps=new window.kakao.maps.services.Places();
-  ps.keywordSearch(q,(d,s)=>{
-    if(s===window.kakao.maps.services.Status.OK){
-      const f=d.filter(p=>p.category_group_code==="FD6"||p.category_name?.includes("음식점"));
-      res(f.length>0?f.slice(0,8):d.slice(0,8))
-    }else res([])
-  },{category_group_code:"FD6",size:10})
-});
+const kakaoSearch = (query) => {
+  return new Promise((resolve) => {
+    // 카카오맵 API가 로드되지 않은 경우
+    if (!window.kakao?.maps?.services) {
+      resolve([]);
+      return;
+    }
+
+    const places = new window.kakao.maps.services.Places();
+
+    places.keywordSearch(
+      query,
+      (data, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          // 음식점 카테고리만 필터링
+          const foodPlaces = data.filter(
+            place => place.category_group_code === "FD6" ||
+                    place.category_name?.includes("음식점")
+          );
+          // 음식점이 있으면 음식점만, 없으면 전체 결과 반환
+          resolve(foodPlaces.length > 0 ? foodPlaces.slice(0, 8) : data.slice(0, 8));
+        } else {
+          resolve([]);
+        }
+      },
+      {
+        category_group_code: "FD6", // 음식점 카테고리 코드
+        size: 10
+      }
+    );
+  });
+};
 
 // ═══════════════════════════════════════════════════════════
 // 공통 컴포넌트
 // ═══════════════════════════════════════════════════════════
-const avg=rv=>rv.length?rv.reduce((s,r)=>s+r.rating,0)/rv.length:0;
-const exCat=s=>{if(!s)return"";const p=s.split(" > ");return p.length>1?p.slice(1).join(" > "):p[0]};
+// 리뷰 평균 별점 계산
+const calculateAverage = (reviews) => {
+  if (!reviews.length) return 0;
+  return reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+};
+
+// 카카오맵 카테고리에서 상위 카테고리 제거
+const extractCategory = (categoryString) => {
+  if (!categoryString) return "";
+  const parts = categoryString.split(" > ");
+  return parts.length > 1 ? parts.slice(1).join(" > ") : parts[0];
+};
 
 const Stars=({rating,size=18})=>{
   const f=Math.floor(rating),h=rating-f>=.25&&rating-f<.75,e=5-f-(h?1:0);
@@ -176,26 +275,53 @@ const MoonIcon=()=><svg width={16} height={16} viewBox="0 0 24 24" fill="none" s
 // Main App
 // ═══════════════════════════════════════════════════════════
 function App(){
-  const [rests,setRests]=useState([]);
-  const [loading,setLoading]=useState(true);
-  const [view,setView]=useState("list");
-  const [selId,setSelId]=useState(null);
-  const [anim,setAnim]=useState(false);
-  const [mounted,setMounted]=useState(false);
-  const [sq,setSq]=useState("");
-  const [sr,setSr]=useState([]);
-  const [searching,setSearching]=useState(false);
-  const [searched,setSearched]=useState(false);
-  const [picked,setPicked]=useState(null);
-  const [kakaoReady,setKakaoReady]=useState(false);
-  const timer=useRef(null);
-  const [rn,setRn]=useState("");
-  const [rr,setRr]=useState(0);
-  const [rc,setRc]=useState("");
-  const [theme,setTheme]=useState(()=>{try{return localStorage.getItem("matjip-theme")||"dark"}catch{return"dark"}});
-  const sel=rests.find(r=>r.id===selId);
+  // 데이터 상태
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const toggleTheme=()=>{const n=theme==="dark"?"light":"dark";setTheme(n);document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("matjip-theme",n)}catch{}};
+  // 뷰 상태
+  const [view, setView] = useState("list");
+  const [selectedId, setSelectedId] = useState(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // 검색 상태
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [pickedPlace, setPickedPlace] = useState(null);
+  const [kakaoReady, setKakaoReady] = useState(false);
+  const searchTimer = useRef(null);
+
+  // 리뷰 작성 상태
+  const [reviewNickname, setReviewNickname] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+
+  // 테마 상태
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("matjip-theme") || "dark";
+    } catch {
+      return "dark";
+    }
+  });
+
+  const selectedRestaurant = restaurants.find(r => r.id === selectedId);
+
+  // 테마 토글 함수
+  const toggleTheme = useCallback(() => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+    try {
+      localStorage.setItem("matjip-theme", newTheme);
+    } catch (e) {
+      console.error("Failed to save theme:", e);
+    }
+  }, [theme]);
 
   useEffect(()=>{document.documentElement.setAttribute("data-theme",theme)},[]);
 
@@ -209,44 +335,184 @@ function App(){
   },[]);
 
   // 초기 데이터 로드
-  useEffect(()=>{
-    (async()=>{
-      try{const data=await loadFromDB();setRests(data)}catch(e){console.error("DB load error:",e);setRests([])}
-      setLoading(false);setTimeout(()=>setMounted(true),100);
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await loadFromDB();
+        setRestaurants(data);
+        setError(null);
+      } catch (e) {
+        console.error("DB load error:", e);
+        setError("데이터를 불러오는데 실패했습니다. 페이지를 새로고침해주세요.");
+        setRestaurants([]);
+      } finally {
+        setLoading(false);
+        setTimeout(() => setMounted(true), 100);
+      }
     })();
-  },[]);
+  }, []);
 
-  const nav=(to,id=null)=>{setAnim(true);setTimeout(()=>{setView(to);setSelId(id);setAnim(false);if(to==="add"){setSq("");setSr([]);setSearched(false);setPicked(null)}window.scrollTo({top:0,behavior:"smooth"})},200)};
-  const doSearch=(v)=>{setSq(v);setPicked(null);if(timer.current)clearTimeout(timer.current);if(v.trim().length<2){setSr([]);setSearched(false);return}timer.current=setTimeout(async()=>{setSearching(true);const r=await kakaoSearch(v.trim());setSr(r);setSearched(true);setSearching(false)},400)};
-  const pick=(p)=>{setPicked(p);setSr([]);setSq(p.place_name)};
+  // 페이지 네비게이션
+  const navigateTo = useCallback((destination, id = null) => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setView(destination);
+      setSelectedId(id);
+      setIsAnimating(false);
+      if (destination === "add") {
+        setSearchQuery("");
+        setSearchResults([]);
+        setHasSearched(false);
+        setPickedPlace(null);
+      }
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }, 200);
+  }, []);
 
-  const addPlace=async()=>{
-    if(!picked)return;
-    const newData={name:picked.place_name,address:picked.road_address_name||picked.address_name,category:exCat(picked.category_name),phone:picked.phone||"",mapLink:picked.place_url||"https://map.kakao.com"};
-    try{const row=await addRestaurantToDB(newData);setRests(prev=>[{id:row.id,...newData,reviews:[]},...prev])}catch(e){console.error(e)}
-    nav("list");
-  };
+  // 맛집 검색
+  const handleSearch = useCallback((query) => {
+    setSearchQuery(query);
+    setPickedPlace(null);
 
-  const addReview=async()=>{
-    if(!rn.trim()||!rr||!rc.trim())return;
-    const newData={nickname:rn.trim(),rating:rr,comment:rc.trim()};
-    try{const row=await addReviewToDB(selId,newData);setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:[{id:row.id,...newData,createdAt:row.created_at.slice(0,10)},...r.reviews]}:r))}catch(e){console.error(e)}
-    setRn("");setRr(0);setRc("");
-  };
+    if (searchTimer.current) {
+      clearTimeout(searchTimer.current);
+    }
 
-  const deleteReview=async(reviewId)=>{
-    if(!window.confirm("이 리뷰를 삭제할까요?"))return;
-    try{await deleteReviewFromDB(reviewId);setRests(prev=>prev.map(r=>r.id===selId?{...r,reviews:r.reviews.filter(rv=>rv.id!==reviewId)}:r))}catch(e){console.error(e)}
-  };
+    if (query.trim().length < 2) {
+      setSearchResults([]);
+      setHasSearched(false);
+      return;
+    }
 
-  const deleteRestaurant=async()=>{
-    if(!selId||!window.confirm("이 맛집과 리뷰를 모두 삭제할까요?"))return;
-    try{await deleteRestaurantFromDB(selId);setRests(prev=>prev.filter(r=>r.id!==selId));nav("list")}catch(e){console.error(e)}
-  };
+    searchTimer.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const results = await kakaoSearch(query.trim());
+        setSearchResults(results);
+        setHasSearched(true);
+      } catch (e) {
+        console.error("Search error:", e);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+  }, []);
 
-  const sorted=[...rests].sort((a,b)=>{const aa=avg(a.reviews),bb=avg(b.reviews);return bb!==aa?bb-aa:b.reviews.length-a.reviews.length});
+  // 검색 결과에서 맛집 선택
+  const selectPlace = useCallback((place) => {
+    setPickedPlace(place);
+    setSearchResults([]);
+    setSearchQuery(place.place_name);
+  }, []);
 
-  if(loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",color:"var(--neutral-400)",fontSize:15}}>불러오는 중...</div>;
+  // 맛집 등록
+  const addPlace = useCallback(async () => {
+    if (!pickedPlace) return;
+
+    const newRestaurant = {
+      name: pickedPlace.place_name,
+      address: pickedPlace.road_address_name || pickedPlace.address_name,
+      category: extractCategory(pickedPlace.category_name),
+      phone: pickedPlace.phone || "",
+      mapLink: pickedPlace.place_url || "https://map.kakao.com"
+    };
+
+    try {
+      const row = await addRestaurantToDB(newRestaurant);
+      setRestaurants(prev => [{id: row.id, ...newRestaurant, reviews: []}, ...prev]);
+      navigateTo("list");
+    } catch (e) {
+      console.error("Failed to add restaurant:", e);
+      alert("맛집 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+  }, [pickedPlace, navigateTo]);
+
+  // 리뷰 등록
+  const addReview = useCallback(async () => {
+    if (!reviewNickname.trim() || !reviewRating || !reviewComment.trim()) return;
+
+    const newReview = {
+      nickname: reviewNickname.trim(),
+      rating: reviewRating,
+      comment: reviewComment.trim()
+    };
+
+    try {
+      const row = await addReviewToDB(selectedId, newReview);
+      setRestaurants(prev => prev.map(r =>
+        r.id === selectedId
+          ? {...r, reviews: [{id: row.id, ...newReview, createdAt: row.created_at.slice(0, 10)}, ...r.reviews]}
+          : r
+      ));
+      setReviewNickname("");
+      setReviewRating(0);
+      setReviewComment("");
+    } catch (e) {
+      console.error("Failed to add review:", e);
+      alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+  }, [reviewNickname, reviewRating, reviewComment, selectedId]);
+
+  // 리뷰 삭제
+  const deleteReview = useCallback(async (reviewId) => {
+    if (!window.confirm("이 리뷰를 삭제할까요?")) return;
+
+    try {
+      await deleteReviewFromDB(reviewId);
+      setRestaurants(prev => prev.map(r =>
+        r.id === selectedId
+          ? {...r, reviews: r.reviews.filter(rv => rv.id !== reviewId)}
+          : r
+      ));
+    } catch (e) {
+      console.error("Failed to delete review:", e);
+      alert("리뷰 삭제에 실패했습니다. 다시 시도해주세요.");
+    }
+  }, [selectedId]);
+
+  // 맛집 삭제
+  const deleteRestaurant = useCallback(async () => {
+    if (!selectedId || !window.confirm("이 맛집과 리뷰를 모두 삭제할까요?")) return;
+
+    try {
+      await deleteRestaurantFromDB(selectedId);
+      setRestaurants(prev => prev.filter(r => r.id !== selectedId));
+      navigateTo("list");
+    } catch (e) {
+      console.error("Failed to delete restaurant:", e);
+      alert("맛집 삭제에 실패했습니다. 다시 시도해주세요.");
+    }
+  }, [selectedId, navigateTo]);
+
+  // 평점순으로 정렬된 맛집 목록
+  const sortedRestaurants = useMemo(() => {
+    return [...restaurants].sort((a, b) => {
+      const avgA = calculateAverage(a.reviews);
+      const avgB = calculateAverage(b.reviews);
+      return avgB !== avgA ? avgB - avgA : b.reviews.length - a.reviews.length;
+    });
+  }, [restaurants]);
+
+  if (loading) {
+    return (
+      <div style={{display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "var(--neutral-400)", fontSize: 15}}>
+        불러오는 중...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "20px"}}>
+        <div style={{fontSize: 48, marginBottom: 16}}>⚠️</div>
+        <div style={{fontSize: 18, fontWeight: 600, color: "var(--neutral-800)", marginBottom: 8}}>{error}</div>
+        <button className="btn-primary" onClick={() => window.location.reload()} style={{marginTop: 16}}>
+          새로고침
+        </button>
+      </div>
+    );
+  }
 
   return(
     <div style={{minHeight:"100vh",background:"var(--bg)",transition:"background .3s"}}>
@@ -254,18 +520,18 @@ function App(){
       {/* ═══ Header ═══ */}
       <header style={{position:"sticky",top:0,zIndex:50,background:"var(--header-bg)",backdropFilter:"blur(20px)",WebkitBackdropFilter:"blur(20px)",borderBottom:"1px solid var(--neutral-200)",transition:"background .3s,border-color .3s"}}>
         <div className="container-main" style={{maxWidth:960,margin:"0 auto",padding:"0 32px",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontWeight:800,fontSize:22,color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>nav("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
+          <div style={{fontWeight:800,fontSize:22,color:"var(--neutral-900)",cursor:"pointer"}} onClick={()=>navigateTo("list")}>맛집<span style={{color:"var(--brand)"}}>기록</span></div>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <button className="theme-btn" onClick={toggleTheme} aria-label="테마 전환">{theme==="dark"?<SunIcon/>:<MoonIcon/>}</button>
             <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:"var(--badge-bg)",color:"var(--badge-color)"}}>
               <div style={{width:6,height:6,borderRadius:"50%",background:"var(--badge-color)"}}/>DB 연결됨
             </div>
-            <button className="btn-primary" style={{padding:"10px 22px",fontSize:14}} onClick={()=>nav("add")}>+ 맛집 등록</button>
+            <button className="btn-primary" style={{padding:"10px 22px",fontSize:14}} onClick={()=>navigateTo("add")}>+ 맛집 등록</button>
           </div>
         </div>
       </header>
 
-      <main className={`container-main ${anim?"page-exit":"page-enter"}`} style={{maxWidth:960,margin:"0 auto",padding:"0 32px",paddingBottom:120}}>
+      <main className={`container-main ${isAnimating ? "page-exit" : "page-enter"}`} style={{maxWidth:960,margin:"0 auto",padding:"0 32px",paddingBottom:120}}>
 
         {/* ═══ LIST ═══ */}
         {view==="list"&&<div>
@@ -274,21 +540,21 @@ function App(){
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>카카오맵에서 검색해서 맛집을 등록하고, 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
-            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{rests.length}개 맛집</div>
-            <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>{rests.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
+            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{restaurants.length}개 맛집</div>
+            <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>{restaurants.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
 
-          {rests.length===0?
+          {restaurants.length===0?
             <div style={{background:"var(--empty-grad)",borderRadius:"var(--radius-xl)",padding:"56px 28px",textAlign:"center",border:"1px solid var(--neutral-200)",boxShadow:"var(--shadow-sm)"}}>
               <div style={{width:84,height:84,margin:"0 auto 18px",borderRadius:"50%",background:"var(--brand-bg)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:38}}>🍽️</div>
               <p style={{fontSize:22,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:10}}>등록된 맛집이 아직 없어요</p>
               <p style={{fontSize:14,color:"var(--neutral-500)",lineHeight:1.7,maxWidth:420,margin:"0 auto 24px"}}>지금 바로 맛집을 등록해보세요.</p>
-              <button className="btn-primary" onClick={()=>nav("add")}>+ 첫 맛집 등록하기</button>
+              <button className="btn-primary" onClick={()=>navigateTo("add")}>+ 첫 맛집 등록하기</button>
             </div>
           :
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
-            {sorted.map((r,i)=>{const a=avg(r.reviews);return(
-              <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>nav("detail",r.id)}>
+            {sortedRestaurants.map((r, i)=>{const a=calculateAverage(r.reviews);return(
+              <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>navigateTo("detail", r.id)}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1}}>
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
@@ -307,25 +573,25 @@ function App(){
         </div>}
 
         {/* ═══ DETAIL ═══ */}
-        {view==="detail"&&sel&&<div>
-          <div style={{padding:"var(--space-lg) 0 var(--space-md)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>nav("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
+        {view==="detail"&&selectedRestaurant&&<div>
+          <div style={{padding:"var(--space-lg) 0 var(--space-md)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>navigateTo("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
 
           <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-200)",marginBottom:"var(--space-xl)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16}}>
               <div style={{flex:1,minWidth:200}}>
-                <h1 style={{fontSize:30,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{sel.name}</h1>
-                {sel.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"3px 10px",borderRadius:100,display:"inline-block",marginBottom:10}}>{sel.category}</span>}
-                <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{sel.address}</p>
-                {sel.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>{sel.phone}</p>}
+                <h1 style={{fontSize:30,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{selectedRestaurant.name}</h1>
+                {selectedRestaurant.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"3px 10px",borderRadius:100,display:"inline-block",marginBottom:10}}>{selectedRestaurant.category}</span>}
+                <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{selectedRestaurant.address}</p>
+                {selectedRestaurant.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>{selectedRestaurant.phone}</p>}
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                  <a href={sel.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>카카오맵에서 보기</a>
+                  <a href={selectedRestaurant.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>카카오맵에서 보기</a>
                   <button className="btn-secondary" style={{padding:"8px 14px",fontSize:13,color:"var(--del-c)",borderColor:"var(--del-bc)",background:"var(--del-bg)",borderRadius:"var(--radius-sm)"}} onClick={deleteRestaurant}>맛집 삭제</button>
                 </div>
               </div>
               <div style={{textAlign:"center",padding:"20px 28px",background:"var(--accent-grad)",borderRadius:"var(--radius-lg)"}}>
-                <div style={{fontSize:42,fontWeight:800,color:"var(--brand)",lineHeight:1}}>{sel.reviews.length?avg(sel.reviews).toFixed(1):"—"}</div>
-                <Stars rating={avg(sel.reviews)} size={18}/>
-                <div style={{fontSize:13,color:"var(--neutral-500)",marginTop:6,fontWeight:500}}>리뷰 {sel.reviews.length}개</div>
+                <div style={{fontSize:42,fontWeight:800,color:"var(--brand)",lineHeight:1}}>{selectedRestaurant.reviews.length?calculateAverage(selectedRestaurant.reviews).toFixed(1):"—"}</div>
+                <Stars rating={calculateAverage(selectedRestaurant.reviews)} size={18}/>
+                <div style={{fontSize:13,color:"var(--neutral-500)",marginTop:6,fontWeight:500}}>리뷰 {selectedRestaurant.reviews.length}개</div>
               </div>
             </div>
           </div>
@@ -335,21 +601,21 @@ function App(){
             <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 작성하기</h2>
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>닉네임</label><input className="input-field" placeholder="닉네임을 입력하세요" value={rn} onChange={e=>setRn(e.target.value)}/></div>
-                <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>별점</label><div style={{paddingTop:8}}><StarInput value={rr} onChange={setRr}/></div></div>
+                <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>닉네임</label><input className="input-field" placeholder="닉네임을 입력하세요" value={reviewNickname} onChange={e => setReviewNickname(e.target.value)}/></div>
+                <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>별점</label><div style={{paddingTop:8}}><StarInput value={reviewRating} onChange={setReviewRating}/></div></div>
               </div>
-              <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>한줄평</label><input className="input-field" placeholder="이 맛집에 대한 한줄평을 남겨주세요" value={rc} onChange={e=>setRc(e.target.value)}/></div>
-              <div style={{display:"flex",justifyContent:"flex-end"}}><button className="btn-primary" disabled={!rn.trim()||!rr||!rc.trim()} onClick={addReview}>리뷰 등록</button></div>
+              <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>한줄평</label><input className="input-field" placeholder="이 맛집에 대한 한줄평을 남겨주세요" value={reviewComment} onChange={e => setReviewComment(e.target.value)}/></div>
+              <div style={{display:"flex",justifyContent:"flex-end"}}><button className="btn-primary" disabled={!reviewNickname.trim() || !reviewRating || !reviewComment.trim()} onClick={addReview}>리뷰 등록</button></div>
             </div>
           </div>
 
           {/* 리뷰 목록 */}
           <div className="stagger-item" style={{animationDelay:".2s"}}>
-            <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 {sel.reviews.length}개</h2>
-            {sel.reviews.length===0?
+            <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 {selectedRestaurant.reviews.length}개</h2>
+            {selectedRestaurant.reviews.length===0?
               <div style={{background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-2xl) var(--space-lg)",textAlign:"center",border:"1px dashed var(--neutral-200)"}}><div style={{fontSize:40,marginBottom:12}}>📝</div><p style={{fontSize:15,color:"var(--neutral-400)",fontWeight:500}}>아직 리뷰가 없어요</p><p style={{fontSize:13,color:"var(--neutral-300)",marginTop:4}}>첫 번째 리뷰를 남겨보세요!</p></div>
             :<div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {sel.reviews.map((rv,i)=><div key={rv.id} className="review-item" style={{animationDelay:`${i*.06}s`,background:"var(--surface)",borderRadius:"var(--radius-md)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)"}}>
+              {selectedRestaurant.reviews.map((rv,i)=><div key={rv.id} className="review-item" style={{animationDelay:`${i*.06}s`,background:"var(--surface)",borderRadius:"var(--radius-md)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                   <div style={{display:"flex",alignItems:"center",gap:10}}>
                     <div style={{width:34,height:34,borderRadius:"50%",background:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},50%,var(--av-bg))`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:`hsl(${(rv.nickname.charCodeAt(0)*47)%360},55%,var(--av-fg))`}}>{rv.nickname[0]}</div>
@@ -368,7 +634,7 @@ function App(){
 
         {/* ═══ ADD ═══ */}
         {view==="add"&&<div style={{maxWidth:600,margin:"0 auto"}}>
-          <div style={{padding:"var(--space-xl) 0 var(--space-lg)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>nav("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
+          <div style={{padding:"var(--space-xl) 0 var(--space-lg)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>navigateTo("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
 
           <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-200)"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:8}}>
@@ -380,22 +646,22 @@ function App(){
             </div>
             <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>가게 이름이나 키워드로 검색하면 카카오맵에서 정보를 가져옵니다</p>
 
-            <div style={{position:"relative",marginBottom:picked?20:0}}>
+            <div style={{position:"relative",marginBottom: pickedPlace ? 20 : 0}}>
               <div style={{position:"relative"}}>
                 <div style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",color:"var(--neutral-400)",zIndex:1}}>
                   <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                 </div>
-                <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder={kakaoReady?"맛집 이름을 검색하세요 (예: 강남 맛집, 홍대 파스타)":"카카오 API 키를 먼저 설정해주세요"} value={sq} onChange={e=>doSearch(e.target.value)} disabled={!kakaoReady}/>
-                {searching&&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-300)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
+                <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder={kakaoReady?"맛집 이름을 검색하세요 (예: 강남 맛집, 홍대 파스타)":"카카오 API 키를 먼저 설정해주세요"} value={searchQuery} onChange={e => handleSearch(e.target.value)} disabled={!kakaoReady}/>
+                {isSearching &&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-300)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
               </div>
 
-              {sr.length>0&&!picked&&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--popover)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",maxHeight:360,overflowY:"auto"}}>
-                {sr.map((p,i)=><div key={i} className="search-item" onClick={()=>pick(p)}>
+              {searchResults.length > 0 && !pickedPlace &&<div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--popover)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",maxHeight:360,overflowY:"auto"}}>
+                {searchResults.map((p, i)=><div key={i} className="search-item" onClick={() => selectPlace(p)}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                     <div style={{flex:1}}>
                       <div style={{fontSize:15,fontWeight:600,color:"var(--neutral-800)",letterSpacing:"-.02em",marginBottom:4}}>{p.place_name}</div>
                       <div style={{fontSize:13,color:"var(--neutral-500)",marginBottom:2}}>{p.road_address_name||p.address_name}</div>
-                      {p.category_name&&<span style={{fontSize:11,color:"var(--brand)",fontWeight:500}}>{exCat(p.category_name)}</span>}
+                      {p.category_name&&<span style={{fontSize:11,color:"var(--brand)",fontWeight:500}}>{extractCategory(p.category_name)}</span>}
                     </div>
                     <div style={{flexShrink:0,width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--neutral-200)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--neutral-400)"}}>
                       <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -404,33 +670,33 @@ function App(){
                 </div>)}
               </div>}
 
-              {searched&&sr.length===0&&sq.trim().length>=2&&!picked&&!searching&&
+              {hasSearched && searchResults.length===0&&searchQuery.trim().length>=2&&!pickedPlace &&!isSearching &&
                 <div style={{position:"absolute",top:"100%",left:0,right:0,zIndex:20,background:"var(--popover)",borderRadius:"0 0 var(--radius-md) var(--radius-md)",boxShadow:"var(--shadow-lg)",border:"1px solid var(--neutral-200)",borderTop:"none",padding:"24px 20px",textAlign:"center"}}>
                   <p style={{fontSize:14,color:"var(--neutral-400)"}}>검색 결과가 없어요</p><p style={{fontSize:13,color:"var(--neutral-300)",marginTop:4}}>다른 키워드로 검색해보세요</p>
                 </div>}
             </div>
 
-            {picked&&<div style={{background:"var(--accent-grad)",border:`1.5px solid var(--pick-bc)`,borderRadius:"var(--radius-lg)",padding:"20px 24px",animation:"fadeUp .3s ease forwards",marginBottom:20}}>
+            {pickedPlace &&<div style={{background:"var(--accent-grad)",border:`1.5px solid var(--pick-bc)`,borderRadius:"var(--radius-lg)",padding:"20px 24px",animation:"fadeUp .3s ease forwards",marginBottom:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12}}>
                 <div style={{flex:1}}>
-                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><Pin size={20} color="var(--brand)"/><span style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em"}}>{picked.place_name}</span></div>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}><Pin size={20} color="var(--brand)"/><span style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em"}}>{pickedPlace.place_name}</span></div>
                   <div style={{display:"flex",flexDirection:"column",gap:4,marginLeft:28}}>
-                    <span style={{fontSize:14,color:"var(--neutral-600)"}}>{picked.road_address_name||picked.address_name}</span>
-                    {picked.category_name&&<span style={{fontSize:13,color:"var(--brand)",fontWeight:500}}>{exCat(picked.category_name)}</span>}
-                    {picked.phone&&<span style={{fontSize:13,color:"var(--neutral-500)"}}>📞 {picked.phone}</span>}
+                    <span style={{fontSize:14,color:"var(--neutral-600)"}}>{pickedPlace.road_address_name||pickedPlace.address_name}</span>
+                    {pickedPlace.category_name&&<span style={{fontSize:13,color:"var(--brand)",fontWeight:500}}>{extractCategory(pickedPlace.category_name)}</span>}
+                    {pickedPlace.phone&&<span style={{fontSize:13,color:"var(--neutral-500)"}}>📞 {pickedPlace.phone}</span>}
                   </div>
-                  {picked.place_url&&<a href={picked.place_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginLeft:28,marginTop:10,fontSize:13,color:"var(--brand-dark)",textDecoration:"none",fontWeight:500}}>카카오맵에서 확인 →</a>}
+                  {pickedPlace.place_url&&<a href={pickedPlace.place_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginLeft:28,marginTop:10,fontSize:13,color:"var(--brand-dark)",textDecoration:"none",fontWeight:500}}>카카오맵에서 확인 →</a>}
                 </div>
-                <button onClick={()=>{setPicked(null);setSq("")}} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--neutral-400)"}}><svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                <button onClick={()=>{setPickedPlace(null); setSearchQuery("")}} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--neutral-400)"}}><svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
               </div>
             </div>}
 
-            {picked&&<div style={{display:"flex",gap:12,justifyContent:"flex-end"}}>
-              <button className="btn-secondary" onClick={()=>{setPicked(null);setSq("")}}>다시 검색</button>
+            {pickedPlace &&<div style={{display:"flex",gap:12,justifyContent:"flex-end"}}>
+              <button className="btn-secondary" onClick={()=>{setPickedPlace(null); setSearchQuery("")}}>다시 검색</button>
               <button className="btn-primary" onClick={addPlace}>이 맛집 등록하기</button>
             </div>}
 
-            {!picked&&!searched&&sq.length===0&&kakaoReady&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
+            {!pickedPlace &&!hasSearched && searchQuery.length===0&&kakaoReady&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
               <div style={{fontSize:36,marginBottom:12}}>🔍</div>
               <p style={{fontSize:15,color:"var(--neutral-500)",fontWeight:500,marginBottom:6}}>가게 이름으로 검색해보세요</p>
               <p style={{fontSize:13,color:"var(--neutral-400)",lineHeight:1.6}}>카카오맵에서 주소, 카테고리, 전화번호를<br/>자동으로 가져옵니다</p>
