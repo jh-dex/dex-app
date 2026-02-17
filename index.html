@@ -252,24 +252,144 @@ const extractCategory = (categoryString) => {
   return parts.length > 1 ? parts.slice(1).join(" > ") : parts[0];
 };
 
-const Stars=({rating,size=18})=>{
-  const f=Math.floor(rating),h=rating-f>=.25&&rating-f<.75,e=5-f-(h?1:0);
-  return React.createElement("span",{style:{display:"inline-flex",gap:2,alignItems:"center"}},[
-    ...Array(f).fill(0).map((_,i)=>React.createElement("svg",{key:"f"+i,width:size,height:size,viewBox:"0 0 24 24",fill:"var(--brand)",stroke:"none"},React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"}))),
-    h&&React.createElement("svg",{key:"h",width:size,height:size,viewBox:"0 0 24 24"},React.createElement("defs",null,React.createElement("linearGradient",{id:"hs"},React.createElement("stop",{offset:"50%",stopColor:"var(--brand)"}),React.createElement("stop",{offset:"50%",stopColor:"var(--neutral-300)"}))),React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",fill:"url(#hs)"})),
-    ...Array(e).fill(0).map((_,i)=>React.createElement("svg",{key:"e"+i,width:size,height:size,viewBox:"0 0 24 24",fill:"var(--neutral-300)",stroke:"none"},React.createElement("path",{d:"M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"}))),
+// 공통 SVG path
+const STAR_PATH = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z";
+const PIN_PATH = "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z";
+const CHEVRON_LEFT_PATH = "M15 18l-6-6 6-6";
+const CHEVRON_RIGHT_PATH = "M9 18l6-6-6-6";
+const PHONE_PATH = "M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z";
+const CHAT_PATH = "M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z";
+const PLUS_PATH = "M12 5v14M5 12h14";
+const CLOSE_PATH = "M18 6L6 18M6 6l12 12";
+const SEARCH_CIRCLE = {cx: "11", cy: "11", r: "8"};
+const SEARCH_LINE = "m21 21-4.35-4.35";
+
+// 별점 표시 컴포넌트 (읽기 전용)
+const Stars = ({rating, size = 18}) => {
+  const fullStars = Math.floor(rating);
+  const hasHalf = rating - fullStars >= 0.25 && rating - fullStars < 0.75;
+  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
+
+  const StarSvg = ({fill, svgKey, children}) => (
+    React.createElement("svg", {key: svgKey, width: size, height: size, viewBox: "0 0 24 24", fill, stroke: "none"},
+      children || React.createElement("path", {d: STAR_PATH})
+    )
+  );
+
+  return React.createElement("span", {style: {display: "inline-flex", gap: 2, alignItems: "center"}}, [
+    ...Array(fullStars).fill(0).map((_, i) =>
+      StarSvg({fill: "var(--brand)", svgKey: "f" + i})
+    ),
+    hasHalf && React.createElement("svg", {key: "h", width: size, height: size, viewBox: "0 0 24 24"},
+      React.createElement("defs", null,
+        React.createElement("linearGradient", {id: "hs"},
+          React.createElement("stop", {offset: "50%", stopColor: "var(--brand)"}),
+          React.createElement("stop", {offset: "50%", stopColor: "var(--neutral-300)"})
+        )
+      ),
+      React.createElement("path", {d: STAR_PATH, fill: "url(#hs)"})
+    ),
+    ...Array(emptyStars).fill(0).map((_, i) =>
+      StarSvg({fill: "var(--neutral-300)", svgKey: "e" + i})
+    ),
   ].filter(Boolean));
 };
 
-const StarInput=({value,onChange})=>(
-  <div style={{display:"flex",gap:6,cursor:"pointer"}}>
-    {[1,2,3,4,5].map(s=><svg key={s} width={28} height={28} viewBox="0 0 24 24" fill={s<=value?"var(--brand)":"var(--neutral-300)"} stroke="none" onClick={()=>onChange(s)} style={{transition:"transform .15s,fill .2s",cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.transform="scale(1.2)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>)}
+// 별점 입력 컴포넌트
+const StarInput = ({value, onChange}) => (
+  <div style={{display: "flex", gap: 6, cursor: "pointer"}}>
+    {[1, 2, 3, 4, 5].map(score => (
+      <svg
+        key={score}
+        width={28}
+        height={28}
+        viewBox="0 0 24 24"
+        fill={score <= value ? "var(--brand)" : "var(--neutral-300)"}
+        stroke="none"
+        onClick={() => onChange(score)}
+        style={{transition: "transform .15s, fill .2s", cursor: "pointer"}}
+        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.2)"}
+        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+      >
+        <path d={STAR_PATH}/>
+      </svg>
+    ))}
   </div>
 );
 
-const Pin=({size=16,color="currentColor"})=><svg width={size} height={size} viewBox="0 0 24 24" fill={color}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>;
-const SunIcon=()=><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>;
-const MoonIcon=()=><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+// 아이콘 컴포넌트
+const Pin = ({size = 16, color = "currentColor"}) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+    <path d={PIN_PATH}/>
+  </svg>
+);
+
+const SunIcon = () => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+    <circle cx="12" cy="12" r="5"/>
+    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
+
+// 뒤로가기 버튼
+const BackButton = ({onClick}) => (
+  <button
+    className="btn-secondary"
+    style={{padding: "8px 18px", fontSize: 13, display: "inline-flex", alignItems: "center", gap: 6}}
+    onClick={onClick}
+  >
+    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d={CHEVRON_LEFT_PATH}/>
+    </svg>
+    목록으로
+  </button>
+);
+
+// ═══════════════════════════════════════════════════════════
+// 공통 스타일 상수
+// ═══════════════════════════════════════════════════════════
+const CARD_STYLE = {
+  background: "var(--surface)",
+  borderRadius: "var(--radius-xl)",
+  padding: "var(--space-xl)",
+  boxShadow: "var(--shadow-md)",
+  border: "1px solid var(--neutral-200)"
+};
+
+const SECTION_STYLE = {
+  ...CARD_STYLE,
+  boxShadow: "var(--shadow-sm)",
+  marginBottom: "var(--space-xl)"
+};
+
+const LABEL_STYLE = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "var(--neutral-600)",
+  marginBottom: 6
+};
+
+const CATEGORY_TAG_STYLE = {
+  fontSize: 12,
+  color: "var(--brand)",
+  fontWeight: 600,
+  background: "var(--brand-bg)",
+  borderRadius: 100,
+  display: "inline-block"
+};
+
+const DELETE_BTN_STYLE = {
+  color: "var(--del-c)",
+  borderColor: "var(--del-bc)",
+  background: "var(--del-bg)"
+};
 
 // ═══════════════════════════════════════════════════════════
 // Main App
@@ -323,16 +443,21 @@ function App(){
     }
   }, [theme]);
 
-  useEffect(()=>{document.documentElement.setAttribute("data-theme",theme)},[]);
+  // 초기 테마 적용
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, []);
 
   // 카카오 지도 SDK 로드
-  useEffect(()=>{
-    if(!USE_KAKAO) return;
-    const script=document.createElement("script");
-    script.src=`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
-    script.onload=()=>{window.kakao.maps.load(()=>{setKakaoReady(true)})};
+  useEffect(() => {
+    if (!USE_KAKAO) return;
+    const script = document.createElement("script");
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_JS_KEY}&libraries=services&autoload=false`;
+    script.onload = () => {
+      window.kakao.maps.load(() => setKakaoReady(true));
+    };
     document.head.appendChild(script);
-  },[]);
+  }, []);
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -541,7 +666,7 @@ function App(){
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
             <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{restaurants.length}개 맛집</div>
-            <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>{restaurants.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
+            <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d={CHAT_PATH}/></svg>{restaurants.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
 
           {restaurants.length===0?
@@ -558,14 +683,14 @@ function App(){
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1}}>
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
-                    {r.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"2px 8px",borderRadius:100,display:"inline-block",marginBottom:4}}>{r.category}</span>}
+                    {r.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "2px 8px", marginBottom: 4}}>{r.category}</span>}
                     <p style={{fontSize:13,color:"var(--neutral-400)",display:"flex",alignItems:"center",gap:4,marginTop:4}}><Pin size={13} color="var(--neutral-400)"/>{r.address}</p>
                   </div>
                   {a>0&&<div style={{background:a>=4.5?"var(--brand)":a>=3.5?"var(--brand-light)":"var(--neutral-300)",color:a>=3.5?"var(--btn-fg)":"var(--score-low)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:16,fontWeight:800,minWidth:44,textAlign:"center"}}>{a.toFixed(1)}</div>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}><Stars rating={a} size={16}/><span style={{fontSize:13,color:"var(--neutral-400)",fontWeight:500}}>리뷰 {r.reviews.length}개</span></div>
-                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="var(--neutral-300)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="var(--neutral-300)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={CHEVRON_RIGHT_PATH}/></svg>
                 </div>
               </div>
             )})}
@@ -574,18 +699,18 @@ function App(){
 
         {/* ═══ DETAIL ═══ */}
         {view==="detail"&&selectedRestaurant&&<div>
-          <div style={{padding:"var(--space-lg) 0 var(--space-md)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>navigateTo("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
+          <div style={{padding:"var(--space-lg) 0 var(--space-md)"}}><BackButton onClick={() => navigateTo("list")}/></div>
 
-          <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-200)",marginBottom:"var(--space-xl)"}}>
+          <div className="stagger-item" style={{...CARD_STYLE, marginBottom: "var(--space-xl)"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:16}}>
               <div style={{flex:1,minWidth:200}}>
                 <h1 style={{fontSize:30,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{selectedRestaurant.name}</h1>
-                {selectedRestaurant.category&&<span style={{fontSize:12,color:"var(--brand)",fontWeight:600,background:"var(--brand-bg)",padding:"3px 10px",borderRadius:100,display:"inline-block",marginBottom:10}}>{selectedRestaurant.category}</span>}
+                {selectedRestaurant.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "3px 10px", marginBottom: 10}}>{selectedRestaurant.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{selectedRestaurant.address}</p>
-                {selectedRestaurant.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>{selectedRestaurant.phone}</p>}
+                {selectedRestaurant.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d={PHONE_PATH}/></svg>{selectedRestaurant.phone}</p>}
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                   <a href={selectedRestaurant.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>카카오맵에서 보기</a>
-                  <button className="btn-secondary" style={{padding:"8px 14px",fontSize:13,color:"var(--del-c)",borderColor:"var(--del-bc)",background:"var(--del-bg)",borderRadius:"var(--radius-sm)"}} onClick={deleteRestaurant}>맛집 삭제</button>
+                  <button className="btn-secondary" style={{...DELETE_BTN_STYLE, padding: "8px 14px", fontSize: 13, borderRadius: "var(--radius-sm)"}} onClick={deleteRestaurant}>맛집 삭제</button>
                 </div>
               </div>
               <div style={{textAlign:"center",padding:"20px 28px",background:"var(--accent-grad)",borderRadius:"var(--radius-lg)"}}>
@@ -597,14 +722,14 @@ function App(){
           </div>
 
           {/* 리뷰 작성 */}
-          <div className="stagger-item" style={{animationDelay:".1s",background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",marginBottom:"var(--space-xl)"}}>
+          <div className="stagger-item" style={{...SECTION_STYLE, animationDelay: ".1s"}}>
             <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:"var(--space-lg)"}}>리뷰 작성하기</h2>
             <div style={{display:"flex",flexDirection:"column",gap:16}}>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-                <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>닉네임</label><input className="input-field" placeholder="닉네임을 입력하세요" value={reviewNickname} onChange={e => setReviewNickname(e.target.value)}/></div>
-                <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>별점</label><div style={{paddingTop:8}}><StarInput value={reviewRating} onChange={setReviewRating}/></div></div>
+                <div><label style={LABEL_STYLE}>닉네임</label><input className="input-field" placeholder="닉네임을 입력하세요" value={reviewNickname} onChange={e => setReviewNickname(e.target.value)}/></div>
+                <div><label style={LABEL_STYLE}>별점</label><div style={{paddingTop:8}}><StarInput value={reviewRating} onChange={setReviewRating}/></div></div>
               </div>
-              <div><label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-600)",marginBottom:6}}>한줄평</label><input className="input-field" placeholder="이 맛집에 대한 한줄평을 남겨주세요" value={reviewComment} onChange={e => setReviewComment(e.target.value)}/></div>
+              <div><label style={LABEL_STYLE}>한줄평</label><input className="input-field" placeholder="이 맛집에 대한 한줄평을 남겨주세요" value={reviewComment} onChange={e => setReviewComment(e.target.value)}/></div>
               <div style={{display:"flex",justifyContent:"flex-end"}}><button className="btn-primary" disabled={!reviewNickname.trim() || !reviewRating || !reviewComment.trim()} onClick={addReview}>리뷰 등록</button></div>
             </div>
           </div>
@@ -623,7 +748,7 @@ function App(){
                   </div>
                   <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <Stars rating={rv.rating} size={14}/>
-                    <button className="btn-secondary" style={{padding:"6px 10px",fontSize:12,color:"var(--del-c)",borderColor:"var(--del-bc)",background:"var(--del-bg)"}} onClick={()=>deleteReview(rv.id)}>삭제</button>
+                    <button className="btn-secondary" style={{...DELETE_BTN_STYLE, padding: "6px 10px", fontSize: 12}} onClick={() => deleteReview(rv.id)}>삭제</button>
                   </div>
                 </div>
                 <p style={{fontSize:15,color:"var(--neutral-700)",lineHeight:1.6,letterSpacing:"-.02em"}}>{rv.comment}</p>
@@ -634,11 +759,11 @@ function App(){
 
         {/* ═══ ADD ═══ */}
         {view==="add"&&<div style={{maxWidth:600,margin:"0 auto"}}>
-          <div style={{padding:"var(--space-xl) 0 var(--space-lg)"}}><button className="btn-secondary" style={{padding:"8px 18px",fontSize:13,display:"inline-flex",alignItems:"center",gap:6}} onClick={()=>navigateTo("list")}><svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>목록으로</button></div>
+          <div style={{padding:"var(--space-xl) 0 var(--space-lg)"}}><BackButton onClick={() => navigateTo("list")}/></div>
 
-          <div className="stagger-item" style={{background:"var(--surface)",borderRadius:"var(--radius-xl)",padding:"var(--space-xl)",boxShadow:"var(--shadow-md)",border:"1px solid var(--neutral-200)"}}>
+          <div className="stagger-item" style={CARD_STYLE}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:8}}>
-              <h1 style={{fontSize:26,fontWeight:800,color:"var(--neutral-900)",}}>맛집 검색 & 등록</h1>
+              <h1 style={{fontSize:26,fontWeight:800,color:"var(--neutral-900)"}}>맛집 검색 & 등록</h1>
               <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:100,fontSize:11,fontWeight:600,background:kakaoReady?"var(--badge-bg)":"var(--neutral-100)",color:kakaoReady?"var(--badge-color)":"var(--neutral-500)"}}>
                 <div style={{width:6,height:6,borderRadius:"50%",background:kakaoReady?"var(--badge-color)":"var(--neutral-400)"}}/>
                 {kakaoReady?"카카오 검색 연동됨":USE_KAKAO?"카카오 로딩중...":"카카오 미연결"}
@@ -649,7 +774,7 @@ function App(){
             <div style={{position:"relative",marginBottom: pickedPlace ? 20 : 0}}>
               <div style={{position:"relative"}}>
                 <div style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",color:"var(--neutral-400)",zIndex:1}}>
-                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle {...SEARCH_CIRCLE}/><path d={SEARCH_LINE}/></svg>
                 </div>
                 <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder={kakaoReady?"맛집 이름을 검색하세요 (예: 강남 맛집, 홍대 파스타)":"카카오 API 키를 먼저 설정해주세요"} value={searchQuery} onChange={e => handleSearch(e.target.value)} disabled={!kakaoReady}/>
                 {isSearching &&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-300)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
@@ -664,7 +789,7 @@ function App(){
                       {p.category_name&&<span style={{fontSize:11,color:"var(--brand)",fontWeight:500}}>{extractCategory(p.category_name)}</span>}
                     </div>
                     <div style={{flexShrink:0,width:28,height:28,borderRadius:"50%",border:"1.5px solid var(--neutral-200)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--neutral-400)"}}>
-                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><path d={PLUS_PATH}/></svg>
                     </div>
                   </div>
                 </div>)}
@@ -687,7 +812,7 @@ function App(){
                   </div>
                   {pickedPlace.place_url&&<a href={pickedPlace.place_url} target="_blank" rel="noopener noreferrer" style={{display:"inline-block",marginLeft:28,marginTop:10,fontSize:13,color:"var(--brand-dark)",textDecoration:"none",fontWeight:500}}>카카오맵에서 확인 →</a>}
                 </div>
-                <button onClick={()=>{setPickedPlace(null); setSearchQuery("")}} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--neutral-400)"}}><svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                <button onClick={()=>{setPickedPlace(null); setSearchQuery("")}} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--neutral-400)"}}><svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={CLOSE_PATH}/></svg></button>
               </div>
             </div>}
 
