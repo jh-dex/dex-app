@@ -510,6 +510,15 @@ function App(){
     }
   }, []);
 
+  // GitHub Pages SPA 라우팅: 404.html에서 리다이렉트된 경로 복원
+  useEffect(() => {
+    const redirect = sessionStorage.getItem('redirect');
+    if (redirect) {
+      sessionStorage.removeItem('redirect');
+      history.replaceState(null, "", redirect);
+    }
+  }, []);
+
   // 카카오 지도 SDK 로드
   useEffect(() => {
     if (!USE_KAKAO) return;
