@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // GitHub Pages SPA 라우팅 지원
+    // 404 페이지에서 index.html로 리다이렉트하면서 경로 정보 유지
+    sessionStorage.setItem('redirect', location.pathname);
+    location.replace(location.origin);
+  </script>
+</head>
+<body></body>
+</html>
