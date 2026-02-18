@@ -7,15 +7,23 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 <link rel="icon" href="./public/favicon.ico" />
 <script>
+// GitHub Pages 프로젝트 페이지 배포 경로
+// (예: https://<user>.github.io/dex-app)
+window.__BASE_PATH__ = "/dex-app";
+
 // GitHub Pages SPA 라우팅: 404.html에서 전달받은 경로 복원
 // 앱이 로드되기 전에 실행되어야 함
 (function(l) {
+  var basePath = (window.__BASE_PATH__ || "").replace(/\/$/, "");
+  var normalizedPath = l.pathname.replace(/\/$/, "");
+  var basePrefix = basePath && normalizedPath === basePath ? basePath : normalizedPath;
+
   if (l.search[1] === '/' ) {
     var decoded = l.search.slice(1).split('&').map(function(s) {
       return s.replace(/~and~/g, '&')
     }).join('?');
     window.history.replaceState(null, null,
-      l.pathname.slice(0, -1) + decoded + l.hash
+      (basePrefix || "") + decoded + l.hash
     );
   }
 }(window.location))
@@ -112,6 +120,25 @@ main.container-main{padding-bottom:96px!important}
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="text/babel">
 const {useState, useEffect, useRef, useMemo, useCallback} = React;
+
+const BASE_PATH = (() => {
+  const configuredBase = (window.__BASE_PATH__ || "").replace(/\/$/, "");
+  return configuredBase;
+})();
+
+function withBasePath(path) {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return BASE_PATH ? `${BASE_PATH}${normalizedPath}` : normalizedPath;
+}
+
+function stripBasePath(pathname) {
+  if (!BASE_PATH) return pathname;
+  if (pathname === BASE_PATH) return "/";
+  if (pathname.startsWith(`${BASE_PATH}/`)) {
+    return pathname.slice(BASE_PATH.length);
+  }
+  return pathname;
+}
 
 // ═══════════════════════════════════════════════════════════
 // CONFIG
@@ -423,7 +450,7 @@ const DELETE_BTN_STYLE = {
 // URL 경로에서 현재 뷰 파싱 (예: /detail/123 → {view: "detail", id: "123"})
 function parseRoute() {
   // pushState 경로 파싱
-  const path = window.location.pathname.replace(/^\//, "") || "";
+  const path = stripBasePath(window.location.pathname).replace(/^\//, "") || "";
   if (path.startsWith("detail/")) {
     const id = path.replace("detail/", "");
     return {view: "detail", id: id ? Number(id) : null};
@@ -445,9 +472,9 @@ function parseRoute() {
 
 // 뷰 상태에 맞는 경로 생성
 function buildPath(view, id) {
-  if (view === "detail" && id) return "/detail/" + id;
-  if (view === "add") return "/add";
-  return "/";
+  if (view === "detail" && id) return withBasePath("/detail/" + id);
+  if (view === "add") return withBasePath("/add");
+  return withBasePath("/");
 }
 
 // ═══════════════════════════════════════════════════════════
