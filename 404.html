@@ -5,7 +5,8 @@
   <script>
     // GitHub Pages SPA 라우팅: 404 경로를 쿼리 파라미터로 index.html에 전달
     // https://github.com/rafgraph/spa-github-pages
-    var pathSegmentsToKeep = 0;
+    // 프로젝트 페이지(/<repo>/...)는 첫 세그먼트(repo)를 유지해야 함
+    var pathSegmentsToKeep = 1;
     var l = window.location;
     l.replace(
       l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
