@@ -195,13 +195,19 @@ async function addReviewToDB(restaurantId, data) {
 
 // 리뷰 DB에서 삭제
 async function deleteReviewFromDB(id) {
-  await supabase.delete("reviews", `id=eq.${id}`);
+  const result = await supabase.delete("reviews", `id=eq.${id}`);
+  if (Array.isArray(result) && result.length === 0) {
+    throw new Error("DB에서 삭제되지 않았습니다. Supabase RLS 정책에 DELETE 권한을 추가해주세요.");
+  }
 }
 
 // 맛집과 관련 리뷰 DB에서 삭제
 async function deleteRestaurantFromDB(id) {
   await supabase.delete("reviews", `restaurant_id=eq.${id}`);
-  await supabase.delete("restaurants", `id=eq.${id}`);
+  const result = await supabase.delete("restaurants", `id=eq.${id}`);
+  if (Array.isArray(result) && result.length === 0) {
+    throw new Error("DB에서 삭제되지 않았습니다. Supabase RLS 정책에 DELETE 권한을 추가해주세요.");
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -666,6 +672,7 @@ function App(){
 
     try {
       await deleteReviewFromDB(reviewId);
+      // DB 삭제 성공 확인됨 → 로컬 상태도 업데이트
       setRestaurants(prev => prev.map(r =>
         r.id === selectedId
           ? {...r, reviews: r.reviews.filter(rv => rv.id !== reviewId)}
@@ -673,7 +680,12 @@ function App(){
       ));
     } catch (e) {
       console.error("Failed to delete review:", e);
-      alert("리뷰 삭제에 실패했습니다. 다시 시도해주세요.");
+      // DB 삭제 실패 → DB에서 최신 데이터 다시 로드하여 UI 복원
+      try {
+        const data = await loadFromDB();
+        setRestaurants(data);
+      } catch (_) {}
+      alert("리뷰 삭제에 실패했습니다. Supabase 대시보드에서 reviews 테이블의 RLS 정책에 DELETE 권한을 추가해주세요.");
     }
   }, [selectedId]);
 
@@ -687,7 +699,11 @@ function App(){
       navigateTo("list");
     } catch (e) {
       console.error("Failed to delete restaurant:", e);
-      alert("맛집 삭제에 실패했습니다. 다시 시도해주세요.");
+      try {
+        const data = await loadFromDB();
+        setRestaurants(data);
+      } catch (_) {}
+      alert("맛집 삭제에 실패했습니다. Supabase 대시보드에서 RLS 정책에 DELETE 권한을 추가해주세요.");
     }
   }, [selectedId, navigateTo]);
 
