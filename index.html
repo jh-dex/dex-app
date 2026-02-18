@@ -139,7 +139,10 @@ const supabase = {
       method: "DELETE",
       headers: this.headers
     });
-    return response.json();
+    if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+    if (response.status === 204) return null;
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
   }
 };
 
@@ -403,8 +406,18 @@ const DELETE_BTN_STYLE = {
 // 해시 라우팅 유틸리티
 // ═══════════════════════════════════════════════════════════
 
-// URL 해시에서 현재 경로 파싱 (예: #/detail/123 → {view: "detail", id: "123"})
-function parseHash() {
+// URL 경로에서 현재 뷰 파싱 (예: /detail/123 → {view: "detail", id: "123"})
+function parseRoute() {
+  // pushState 경로 파싱
+  const path = window.location.pathname.replace(/^\//, "") || "";
+  if (path.startsWith("detail/")) {
+    const id = path.replace("detail/", "");
+    return {view: "detail", id: id ? Number(id) : null};
+  }
+  if (path === "add") {
+    return {view: "add", id: null};
+  }
+  // 기존 해시 라우팅 호환 (북마크/새로고침 대비)
   const hash = window.location.hash.replace("#/", "") || "";
   if (hash.startsWith("detail/")) {
     const id = hash.replace("detail/", "");
@@ -416,11 +429,11 @@ function parseHash() {
   return {view: "list", id: null};
 }
 
-// 뷰 상태에 맞는 해시 생성
-function buildHash(view, id) {
-  if (view === "detail" && id) return "#/detail/" + id;
-  if (view === "add") return "#/add";
-  return "#/";
+// 뷰 상태에 맞는 경로 생성
+function buildPath(view, id) {
+  if (view === "detail" && id) return "/detail/" + id;
+  if (view === "add") return "/add";
+  return "/";
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -432,8 +445,8 @@ function App(){
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 뷰 상태 (URL 해시에서 초기값 읽기)
-  const initialRoute = useMemo(() => parseHash(), []);
+  // 뷰 상태 (URL 경로에서 초기값 읽기)
+  const initialRoute = useMemo(() => parseRoute(), []);
   const [view, setView] = useState(initialRoute.view);
   const [selectedId, setSelectedId] = useState(initialRoute.id);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -447,7 +460,7 @@ function App(){
   const [pickedPlace, setPickedPlace] = useState(null);
   const [kakaoReady, setKakaoReady] = useState(false);
   const searchTimer = useRef(null);
-  const isNavigating = useRef(false); // navigateTo에서 해시 변경 시 hashchange 중복 방지
+  const isNavigating = useRef(false);
 
   // 리뷰 작성 상태
   const [reviewNickname, setReviewNickname] = useState("");
@@ -482,6 +495,15 @@ function App(){
     document.documentElement.setAttribute("data-theme", theme);
   }, []);
 
+  // 기존 해시 URL을 깔끔한 경로로 전환 (예: /#/detail/1 → /detail/1)
+  useEffect(() => {
+    if (window.location.hash.startsWith("#/")) {
+      const route = parseRoute();
+      const cleanPath = buildPath(route.view, route.id);
+      history.replaceState(null, "", cleanPath);
+    }
+  }, []);
+
   // 카카오 지도 SDK 로드
   useEffect(() => {
     if (!USE_KAKAO) return;
@@ -513,14 +535,8 @@ function App(){
 
   // 브라우저 뒤로가기/앞으로가기 처리
   useEffect(() => {
-    const handleHashChange = () => {
-      // navigateTo에서 해시를 바꾼 경우 중복 처리 방지
-      if (isNavigating.current) {
-        isNavigating.current = false;
-        return;
-      }
-
-      const route = parseHash();
+    const handlePopState = () => {
+      const route = parseRoute();
       // 뒤로가기/앞으로가기는 애니메이션 없이 즉시 전환
       setView(route.view);
       setSelectedId(route.id);
@@ -533,11 +549,11 @@ function App(){
       window.scrollTo({top: 0});
     };
 
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // 페이지 네비게이션 (해시 라우팅 연동)
+  // 페이지 네비게이션 (History API 연동)
   const navigateTo = useCallback((destination, id = null) => {
     setIsAnimating(true);
     setTimeout(() => {
@@ -550,11 +566,10 @@ function App(){
         setHasSearched(false);
         setPickedPlace(null);
       }
-      // URL 해시 업데이트 (브라우저 히스토리에 기록)
-      const newHash = buildHash(destination, id);
-      if (window.location.hash !== newHash) {
-        isNavigating.current = true;
-        window.location.hash = newHash;
+      // URL 업데이트 (브라우저 히스토리에 기록, # 없이)
+      const newPath = buildPath(destination, id);
+      if (window.location.pathname !== newPath) {
+        history.pushState(null, "", newPath);
       }
       window.scrollTo({top: 0, behavior: "smooth"});
     }, 200);
