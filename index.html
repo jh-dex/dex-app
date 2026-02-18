@@ -414,6 +414,13 @@ const DELETE_BTN_STYLE = {
 
 // URL 경로에서 현재 뷰 파싱 (예: /detail/123 → {view: "detail", id: "123"})
 function parseRoute() {
+  // GitHub Pages SPA 라우팅: 404.html에서 리다이렉트된 경로 먼저 복원
+  const redirect = sessionStorage.getItem('redirect');
+  if (redirect) {
+    sessionStorage.removeItem('redirect');
+    history.replaceState(null, "", redirect);
+  }
+
   // pushState 경로 파싱
   const path = window.location.pathname.replace(/^\//, "") || "";
   if (path.startsWith("detail/")) {
@@ -507,15 +514,6 @@ function App(){
       const route = parseRoute();
       const cleanPath = buildPath(route.view, route.id);
       history.replaceState(null, "", cleanPath);
-    }
-  }, []);
-
-  // GitHub Pages SPA 라우팅: 404.html에서 리다이렉트된 경로 복원
-  useEffect(() => {
-    const redirect = sessionStorage.getItem('redirect');
-    if (redirect) {
-      sessionStorage.removeItem('redirect');
-      history.replaceState(null, "", redirect);
     }
   }, []);
 
