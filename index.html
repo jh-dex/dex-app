@@ -140,6 +140,10 @@ function stripBasePath(pathname) {
   return pathname;
 }
 
+function normalizeText(value = "") {
+  return String(value).trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 // ═══════════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════════════
@@ -213,6 +217,23 @@ async function loadFromDB() {
 
 // 맛집 DB에 추가
 async function addRestaurantToDB(data) {
+  const normalizedName = normalizeText(data.name);
+  const normalizedAddress = normalizeText(data.address);
+  const normalizedMapLink = normalizeText(data.mapLink);
+
+  const existing = await supabase.get("restaurants", "select=id,name,address,map_link");
+  const duplicate = existing.find((restaurant) => {
+    const sameMapLink = normalizedMapLink && normalizeText(restaurant.map_link) === normalizedMapLink;
+    const sameNameAndAddress =
+      normalizeText(restaurant.name) === normalizedName &&
+      normalizeText(restaurant.address) === normalizedAddress;
+    return sameMapLink || sameNameAndAddress;
+  });
+
+  if (duplicate) {
+    throw new Error("DUPLICATE_RESTAURANT");
+  }
+
   const result = await supabase.post("restaurants", {
     name: data.name,
     address: data.address,
@@ -507,6 +528,7 @@ function App(){
   const [reviewNickname, setReviewNickname] = useState("");
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
+  const [isSubmittingPlace, setIsSubmittingPlace] = useState(false);
 
   // 테마 상태
   const [theme, setTheme] = useState(() => {
@@ -518,6 +540,21 @@ function App(){
   });
 
   const selectedRestaurant = restaurants.find(r => r.id === selectedId);
+  const isPickedPlaceDuplicate = useMemo(() => {
+    if (!pickedPlace) return false;
+
+    const pickedName = normalizeText(pickedPlace.place_name);
+    const pickedAddress = normalizeText(pickedPlace.road_address_name || pickedPlace.address_name);
+    const pickedMapLink = normalizeText(pickedPlace.place_url);
+
+    return restaurants.some((restaurant) => {
+      const sameMapLink = pickedMapLink && normalizeText(restaurant.mapLink) === pickedMapLink;
+      const sameNameAndAddress =
+        normalizeText(restaurant.name) === pickedName &&
+        normalizeText(restaurant.address) === pickedAddress;
+      return sameMapLink || sameNameAndAddress;
+    });
+  }, [pickedPlace, restaurants]);
 
   // 테마 토글 함수
   const toggleTheme = useCallback(() => {
@@ -655,7 +692,11 @@ function App(){
 
   // 맛집 등록
   const addPlace = useCallback(async () => {
-    if (!pickedPlace) return;
+    if (!pickedPlace || isSubmittingPlace) return;
+    if (isPickedPlaceDuplicate) {
+      alert("이미 등록된 맛집입니다.");
+      return;
+    }
 
     const newRestaurant = {
       name: pickedPlace.place_name,
@@ -666,14 +707,21 @@ function App(){
     };
 
     try {
+      setIsSubmittingPlace(true);
       const row = await addRestaurantToDB(newRestaurant);
       setRestaurants(prev => [{id: row.id, ...newRestaurant, reviews: []}, ...prev]);
       navigateTo("list");
     } catch (e) {
       console.error("Failed to add restaurant:", e);
+      if (e.message === "DUPLICATE_RESTAURANT") {
+        alert("이미 등록된 맛집입니다.");
+        return;
+      }
       alert("맛집 등록에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmittingPlace(false);
     }
-  }, [pickedPlace, navigateTo]);
+  }, [pickedPlace, isPickedPlaceDuplicate, navigateTo, isSubmittingPlace]);
 
   // 리뷰 등록
   const addReview = useCallback(async () => {
@@ -931,8 +979,12 @@ function App(){
 
             {pickedPlace &&<div style={{display:"flex",gap:12,justifyContent:"flex-end"}}>
               <button className="btn-secondary" onClick={()=>{setPickedPlace(null); setSearchQuery("")}}>다시 검색</button>
-              <button className="btn-primary" onClick={addPlace}>이 맛집 등록하기</button>
+              <button className="btn-primary" onClick={addPlace} disabled={isPickedPlaceDuplicate || isSubmittingPlace}>{isSubmittingPlace ? "등록 중..." : "이 맛집 등록하기"}</button>
             </div>}
+
+            {pickedPlace && isPickedPlaceDuplicate &&
+              <p style={{marginTop:10,fontSize:13,color:"var(--del-c)",textAlign:"right"}}>이미 등록된 가게라 추가할 수 없어요.</p>
+            }
 
             {!pickedPlace &&!hasSearched && searchQuery.length===0&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
               <div style={{fontSize:36,marginBottom:12}}>🔍</div>
