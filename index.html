@@ -778,7 +778,7 @@ function App(){
         {view==="list"&&<div>
           <div style={{padding:"var(--space-2xl) 0 var(--space-xl)",opacity:mounted?1:0,transform:mounted?"translateY(0)":"translateY(20px)",transition:"all .6s cubic-bezier(.22,1,.36,1)"}}>
             <h1 className="hero-title" style={{fontSize:38,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>회사 근처<br/><span style={{color:"var(--brand)"}}>맛집</span>을 함께 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
-            <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>DDMC 빌딩 1km 반경 맛집을 등록하고 리뷰를 남겨보세요</p>
+            <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>맛집을 검색하고 등록해서 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
             <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{restaurants.length}개 맛집</div>
@@ -879,7 +879,7 @@ function App(){
 
           <div className="stagger-item" style={CARD_STYLE}>
             <h1 style={{fontSize:26,fontWeight:800,color:"var(--neutral-900)",marginBottom:8}}>맛집 검색 & 등록</h1>
-            <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>회사 1km 반경 맛집만 등록 가능해요</p>
+            <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>회사 근처 맛집만 등록 가능해요</p>
 
             <div style={{position:"relative",marginBottom: pickedPlace ? 20 : 0}}>
               <div style={{position:"relative"}}>
