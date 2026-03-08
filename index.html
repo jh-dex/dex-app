@@ -340,6 +340,106 @@ const CLOSE_PATH = "M18 6L6 18M6 6l12 12";
 const SEARCH_CIRCLE = {cx: "11", cy: "11", r: "8"};
 const SEARCH_LINE = "m21 21-4.35-4.35";
 
+// 비밀번호 입력 모달 컴포넌트
+const PasswordModal = ({show, type, onConfirm, onCancel, password, setPassword}) => {
+  if (!show) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onConfirm();
+  };
+
+  const modalTitle = type === 'restaurant' ? '맛집 삭제' : '리뷰 삭제';
+  const modalMessage = type === 'restaurant'
+    ? '맛집과 모든 리뷰를 삭제하려면 비밀번호를 입력하세요.'
+    : '리뷰를 삭제하려면 비밀번호를 입력하세요.';
+
+  return React.createElement("div", {
+    style: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+      padding: "var(--space-lg)"
+    },
+    onClick: onCancel
+  },
+    React.createElement("div", {
+      style: {
+        background: "var(--surface)",
+        borderRadius: "var(--radius-lg)",
+        padding: "var(--space-xl)",
+        maxWidth: 420,
+        width: "100%",
+        boxShadow: "var(--shadow-lg)",
+        border: "1px solid var(--neutral-200)"
+      },
+      onClick: (e) => e.stopPropagation()
+    },
+      React.createElement("h2", {
+        style: {
+          fontSize: 20,
+          fontWeight: 700,
+          color: "var(--neutral-900)",
+          marginBottom: 12
+        }
+      }, modalTitle),
+      React.createElement("p", {
+        style: {
+          fontSize: 14,
+          color: "var(--neutral-600)",
+          marginBottom: "var(--space-lg)",
+          lineHeight: 1.6
+        }
+      }, modalMessage),
+      React.createElement("form", { onSubmit: handleSubmit },
+        React.createElement("input", {
+          type: "password",
+          className: "input-field",
+          placeholder: "비밀번호 입력",
+          value: password,
+          onChange: (e) => setPassword(e.target.value),
+          autoFocus: true,
+          style: {
+            marginBottom: "var(--space-lg)",
+            fontSize: 16
+          }
+        }),
+        React.createElement("div", {
+          style: {
+            display: "flex",
+            gap: 12,
+            justifyContent: "flex-end"
+          }
+        },
+          React.createElement("button", {
+            type: "button",
+            className: "btn-secondary",
+            onClick: onCancel,
+            style: { minWidth: 80 }
+          }, "취소"),
+          React.createElement("button", {
+            type: "submit",
+            className: "btn-primary",
+            style: {
+              minWidth: 80,
+              background: "var(--danger)",
+              opacity: password.length > 0 ? 1 : 0.5
+            },
+            disabled: password.length === 0
+          }, "삭제")
+        )
+      )
+    )
+  );
+};
+
 // 별점 표시 컴포넌트 (읽기 전용)
 const Stars = ({rating, size = 18}) => {
   const fullStars = Math.floor(rating);
@@ -539,6 +639,10 @@ function App(){
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [isSubmittingPlace, setIsSubmittingPlace] = useState(false);
+
+  // 비밀번호 모달 상태
+  const [passwordModal, setPasswordModal] = useState({ show: false, type: null, targetId: null });
+  const [passwordInput, setPasswordInput] = useState("");
 
   // 테마 상태
   const [theme, setTheme] = useState(() => {
@@ -760,49 +864,52 @@ function App(){
   }, [reviewNickname, reviewRating, reviewComment, selectedId]);
 
   // 리뷰 삭제
-  const deleteReview = useCallback(async (reviewId) => {
-    const password = window.prompt("리뷰를 삭제하려면 비밀번호를 입력하세요:");
-    if (!password) return;
+  const deleteReview = useCallback((reviewId) => {
+    setPasswordModal({ show: true, type: 'review', targetId: reviewId });
+  }, []);
 
-    if (password !== "dexter") {
+  // 비밀번호 모달 확인 처리
+  const handlePasswordConfirm = useCallback(async () => {
+    if (passwordInput !== "dexter") {
       alert("비밀번호가 틀렸습니다.");
       return;
     }
 
+    const { type, targetId } = passwordModal;
+
     try {
-      await deleteReviewFromDB(reviewId);
-      setRestaurants(prev => prev.map(r =>
-        r.id === selectedId
-          ? {...r, reviews: r.reviews.filter(rv => rv.id !== reviewId)}
-          : r
-      ));
+      if (type === 'review') {
+        await deleteReviewFromDB(targetId);
+        setRestaurants(prev => prev.map(r =>
+          r.id === selectedId
+            ? {...r, reviews: r.reviews.filter(rv => rv.id !== targetId)}
+            : r
+        ));
+      } else if (type === 'restaurant') {
+        await deleteRestaurantFromDB(selectedId);
+        setRestaurants(prev => prev.filter(r => r.id !== selectedId));
+        navigateTo("list");
+      }
+
+      setPasswordModal({ show: false, type: null, targetId: null });
+      setPasswordInput("");
     } catch (e) {
-      console.error("Failed to delete review:", e);
-      alert("리뷰 삭제에 실패했습니다. 다시 시도해주세요.");
+      console.error("Failed to delete:", e);
+      alert(type === 'review' ? "리뷰 삭제에 실패했습니다. 다시 시도해주세요." : "맛집 삭제에 실패했습니다. 다시 시도해주세요.");
     }
-  }, [selectedId]);
+  }, [passwordInput, passwordModal, selectedId, navigateTo]);
+
+  // 비밀번호 모달 취소 처리
+  const handlePasswordCancel = useCallback(() => {
+    setPasswordModal({ show: false, type: null, targetId: null });
+    setPasswordInput("");
+  }, []);
 
   // 맛집 삭제
-  const deleteRestaurant = useCallback(async () => {
+  const deleteRestaurant = useCallback(() => {
     if (!selectedId) return;
-
-    const password = window.prompt("맛집과 모든 리뷰를 삭제하려면 비밀번호를 입력하세요:");
-    if (!password) return;
-
-    if (password !== "dexter") {
-      alert("비밀번호가 틀렸습니다.");
-      return;
-    }
-
-    try {
-      await deleteRestaurantFromDB(selectedId);
-      setRestaurants(prev => prev.filter(r => r.id !== selectedId));
-      navigateTo("list");
-    } catch (e) {
-      console.error("Failed to delete restaurant:", e);
-      alert("맛집 삭제에 실패했습니다. 다시 시도해주세요.");
-    }
-  }, [selectedId, navigateTo]);
+    setPasswordModal({ show: true, type: 'restaurant', targetId: selectedId });
+  }, [selectedId]);
 
   // 평점순으로 정렬된 맛집 목록
   const sortedRestaurants = useMemo(() => {
@@ -1018,6 +1125,15 @@ function App(){
           </div>
         </div>}
       </main>
+
+      <PasswordModal
+        show={passwordModal.show}
+        type={passwordModal.type}
+        password={passwordInput}
+        setPassword={setPasswordInput}
+        onConfirm={handlePasswordConfirm}
+        onCancel={handlePasswordCancel}
+      />
 
       <footer style={{textAlign:"center",padding:"var(--space-xl) var(--space-lg)",borderTop:"1px solid var(--neutral-200)",fontSize:13,color:"var(--neutral-400)",transition:"border-color .3s,color .3s"}}>맛집기록 — 나만의 맛집 리뷰 서비스</footer>
     </div>
