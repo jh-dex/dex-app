@@ -7,23 +7,15 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 <link rel="icon" href="./public/favicon.ico" />
 <script>
-// GitHub Pages 프로젝트 페이지 배포 경로
-// (예: https://<user>.github.io/dex-app)
-window.__BASE_PATH__ = "/dex-app";
-
 // GitHub Pages SPA 라우팅: 404.html에서 전달받은 경로 복원
 // 앱이 로드되기 전에 실행되어야 함
 (function(l) {
-  var basePath = (window.__BASE_PATH__ || "").replace(/\/$/, "");
-  var normalizedPath = l.pathname.replace(/\/$/, "");
-  var basePrefix = basePath && normalizedPath === basePath ? basePath : normalizedPath;
-
   if (l.search[1] === '/' ) {
     var decoded = l.search.slice(1).split('&').map(function(s) {
       return s.replace(/~and~/g, '&')
     }).join('?');
     window.history.replaceState(null, null,
-      (basePrefix || "") + decoded + l.hash
+      l.pathname.slice(0, -1) + decoded + l.hash
     );
   }
 }(window.location))
@@ -121,29 +113,6 @@ main.container-main{padding-bottom:96px!important}
 <script type="text/babel">
 const {useState, useEffect, useRef, useMemo, useCallback} = React;
 
-const BASE_PATH = (() => {
-  const configuredBase = (window.__BASE_PATH__ || "").replace(/\/$/, "");
-  return configuredBase;
-})();
-
-function withBasePath(path) {
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return BASE_PATH ? `${BASE_PATH}${normalizedPath}` : normalizedPath;
-}
-
-function stripBasePath(pathname) {
-  if (!BASE_PATH) return pathname;
-  if (pathname === BASE_PATH) return "/";
-  if (pathname.startsWith(`${BASE_PATH}/`)) {
-    return pathname.slice(BASE_PATH.length);
-  }
-  return pathname;
-}
-
-function normalizeText(value = "") {
-  return String(value).trim().toLowerCase().replace(/\s+/g, " ");
-}
-
 // ═══════════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════════════
@@ -217,23 +186,6 @@ async function loadFromDB() {
 
 // 맛집 DB에 추가
 async function addRestaurantToDB(data) {
-  const normalizedName = normalizeText(data.name);
-  const normalizedAddress = normalizeText(data.address);
-  const normalizedMapLink = normalizeText(data.mapLink);
-
-  const existing = await supabase.get("restaurants", "select=id,name,address,map_link");
-  const duplicate = existing.find((restaurant) => {
-    const sameMapLink = normalizedMapLink && normalizeText(restaurant.map_link) === normalizedMapLink;
-    const sameNameAndAddress =
-      normalizeText(restaurant.name) === normalizedName &&
-      normalizeText(restaurant.address) === normalizedAddress;
-    return sameMapLink || sameNameAndAddress;
-  });
-
-  if (duplicate) {
-    throw new Error("DUPLICATE_RESTAURANT");
-  }
-
   const result = await supabase.post("restaurants", {
     name: data.name,
     address: data.address,
@@ -481,7 +433,7 @@ const DELETE_BTN_STYLE = {
 // URL 경로에서 현재 뷰 파싱 (예: /detail/123 → {view: "detail", id: "123"})
 function parseRoute() {
   // pushState 경로 파싱
-  const path = stripBasePath(window.location.pathname).replace(/^\//, "") || "";
+  const path = window.location.pathname.replace(/^\//, "") || "";
   if (path.startsWith("detail/")) {
     const id = path.replace("detail/", "");
     return {view: "detail", id: id ? Number(id) : null};
@@ -503,9 +455,9 @@ function parseRoute() {
 
 // 뷰 상태에 맞는 경로 생성
 function buildPath(view, id) {
-  if (view === "detail" && id) return withBasePath("/detail/" + id);
-  if (view === "add") return withBasePath("/add");
-  return withBasePath("/");
+  if (view === "detail" && id) return "/detail/" + id;
+  if (view === "add") return "/add";
+  return "/";
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -538,7 +490,6 @@ function App(){
   const [reviewNickname, setReviewNickname] = useState("");
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
-  const [isSubmittingPlace, setIsSubmittingPlace] = useState(false);
 
   // 테마 상태
   const [theme, setTheme] = useState(() => {
@@ -550,21 +501,6 @@ function App(){
   });
 
   const selectedRestaurant = restaurants.find(r => r.id === selectedId);
-  const isPickedPlaceDuplicate = useMemo(() => {
-    if (!pickedPlace) return false;
-
-    const pickedName = normalizeText(pickedPlace.place_name);
-    const pickedAddress = normalizeText(pickedPlace.road_address_name || pickedPlace.address_name);
-    const pickedMapLink = normalizeText(pickedPlace.place_url);
-
-    return restaurants.some((restaurant) => {
-      const sameMapLink = pickedMapLink && normalizeText(restaurant.mapLink) === pickedMapLink;
-      const sameNameAndAddress =
-        normalizeText(restaurant.name) === pickedName &&
-        normalizeText(restaurant.address) === pickedAddress;
-      return sameMapLink || sameNameAndAddress;
-    });
-  }, [pickedPlace, restaurants]);
 
   // 테마 토글 함수
   const toggleTheme = useCallback(() => {
@@ -702,11 +638,7 @@ function App(){
 
   // 맛집 등록
   const addPlace = useCallback(async () => {
-    if (!pickedPlace || isSubmittingPlace) return;
-    if (isPickedPlaceDuplicate) {
-      alert("이미 등록된 맛집입니다.");
-      return;
-    }
+    if (!pickedPlace) return;
 
     const newRestaurant = {
       name: pickedPlace.place_name,
@@ -717,21 +649,14 @@ function App(){
     };
 
     try {
-      setIsSubmittingPlace(true);
       const row = await addRestaurantToDB(newRestaurant);
       setRestaurants(prev => [{id: row.id, ...newRestaurant, reviews: []}, ...prev]);
-      navigateTo("list");
+      navigateTo("detail", row.id);
     } catch (e) {
       console.error("Failed to add restaurant:", e);
-      if (e.message === "DUPLICATE_RESTAURANT") {
-        alert("이미 등록된 맛집입니다.");
-        return;
-      }
       alert("맛집 등록에 실패했습니다. 다시 시도해주세요.");
-    } finally {
-      setIsSubmittingPlace(false);
     }
-  }, [pickedPlace, isPickedPlaceDuplicate, navigateTo, isSubmittingPlace]);
+  }, [pickedPlace, navigateTo]);
 
   // 리뷰 등록
   const addReview = useCallback(async () => {
@@ -761,7 +686,13 @@ function App(){
 
   // 리뷰 삭제
   const deleteReview = useCallback(async (reviewId) => {
-    if (!window.confirm("이 리뷰를 삭제할까요?")) return;
+    const password = window.prompt("리뷰를 삭제하려면 비밀번호를 입력하세요:");
+    if (!password) return;
+
+    if (password !== "dexter") {
+      alert("비밀번호가 틀렸습니다.");
+      return;
+    }
 
     try {
       await deleteReviewFromDB(reviewId);
@@ -778,7 +709,15 @@ function App(){
 
   // 맛집 삭제
   const deleteRestaurant = useCallback(async () => {
-    if (!selectedId || !window.confirm("이 맛집과 리뷰를 모두 삭제할까요?")) return;
+    if (!selectedId) return;
+
+    const password = window.prompt("맛집과 모든 리뷰를 삭제하려면 비밀번호를 입력하세요:");
+    if (!password) return;
+
+    if (password !== "dexter") {
+      alert("비밀번호가 틀렸습니다.");
+      return;
+    }
 
     try {
       await deleteRestaurantFromDB(selectedId);
@@ -838,7 +777,7 @@ function App(){
         {/* ═══ LIST ═══ */}
         {view==="list"&&<div>
           <div style={{padding:"var(--space-2xl) 0 var(--space-xl)",opacity:mounted?1:0,transform:mounted?"translateY(0)":"translateY(20px)",transition:"all .6s cubic-bezier(.22,1,.36,1)"}}>
-            <h1 className="hero-title" style={{fontSize:38,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>나만의 맛집을<br/><span style={{color:"var(--brand)"}}>기록</span>하고 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
+            <h1 className="hero-title" style={{fontSize:38,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>회사 근처<br/><span style={{color:"var(--brand)"}}>맛집</span>을 함께 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>맛집을 검색하고 등록해서 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
@@ -850,7 +789,7 @@ function App(){
             <div style={{background:"var(--empty-grad)",borderRadius:"var(--radius-xl)",padding:"56px 28px",textAlign:"center",border:"1px solid var(--neutral-200)",boxShadow:"var(--shadow-sm)"}}>
               <div style={{width:84,height:84,margin:"0 auto 18px",borderRadius:"50%",background:"var(--brand-bg)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:38}}>🍽️</div>
               <p style={{fontSize:22,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:10}}>등록된 맛집이 아직 없어요</p>
-              <p style={{fontSize:14,color:"var(--neutral-500)",lineHeight:1.7,maxWidth:420,margin:"0 auto 24px"}}>지금 바로 맛집을 등록해보세요.</p>
+              <p style={{fontSize:14,color:"var(--neutral-500)",lineHeight:1.7,maxWidth:420,margin:"0 auto 24px"}}>회사 근처 맛집을 찾아 등록하고 동료들과 공유해보세요.</p>
               <button className="btn-primary" onClick={()=>navigateTo("add")}>+ 첫 맛집 등록하기</button>
             </div>
           :
@@ -940,14 +879,14 @@ function App(){
 
           <div className="stagger-item" style={CARD_STYLE}>
             <h1 style={{fontSize:26,fontWeight:800,color:"var(--neutral-900)",marginBottom:8}}>맛집 검색 & 등록</h1>
-            <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>가게 이름이나 키워드로 검색해보세요</p>
+            <p style={{fontSize:14,color:"var(--neutral-400)",marginBottom:"var(--space-xl)",letterSpacing:"-.02em"}}>회사 근처 맛집만 등록 가능해요</p>
 
             <div style={{position:"relative",marginBottom: pickedPlace ? 20 : 0}}>
               <div style={{position:"relative"}}>
                 <div style={{position:"absolute",left:16,top:"50%",transform:"translateY(-50%)",color:"var(--neutral-400)",zIndex:1}}>
                   <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><circle {...SEARCH_CIRCLE}/><path d={SEARCH_LINE}/></svg>
                 </div>
-                <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder="맛집 이름을 검색하세요 (예: 강남 맛집, 홍대 파스타)" value={searchQuery} onChange={e => handleSearch(e.target.value)} disabled={!kakaoReady}/>
+                <input className="input-field" style={{paddingLeft:44,fontSize:16}} placeholder="가게 이름이나 키워드를 입력하세요" value={searchQuery} onChange={e => handleSearch(e.target.value)} disabled={!kakaoReady}/>
                 {isSearching &&<div style={{position:"absolute",right:16,top:"50%",transform:"translateY(-50%)"}}><div style={{width:18,height:18,border:"2px solid var(--neutral-300)",borderTopColor:"var(--brand)",borderRadius:"50%",animation:"spin .6s linear infinite"}}/></div>}
               </div>
 
@@ -989,12 +928,8 @@ function App(){
 
             {pickedPlace &&<div style={{display:"flex",gap:12,justifyContent:"flex-end"}}>
               <button className="btn-secondary" onClick={()=>{setPickedPlace(null); setSearchQuery("")}}>다시 검색</button>
-              <button className="btn-primary" onClick={addPlace} disabled={isPickedPlaceDuplicate || isSubmittingPlace}>{isSubmittingPlace ? "등록 중..." : "이 맛집 등록하기"}</button>
+              <button className="btn-primary" onClick={addPlace}>이 맛집 등록하기</button>
             </div>}
-
-            {pickedPlace && isPickedPlaceDuplicate &&
-              <p style={{marginTop:10,fontSize:13,color:"var(--del-c)",textAlign:"right"}}>이미 등록된 가게라 추가할 수 없어요.</p>
-            }
 
             {!pickedPlace &&!hasSearched && searchQuery.length===0&&<div style={{marginTop:32,padding:"28px 24px",background:"var(--neutral-50)",borderRadius:"var(--radius-lg)",textAlign:"center"}}>
               <div style={{fontSize:36,marginBottom:12}}>🔍</div>
