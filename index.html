@@ -429,11 +429,10 @@ const PasswordModal = ({show, type, onConfirm, onCancel, password, setPassword})
             className: "btn-primary",
             style: {
               minWidth: 80,
-              background: "var(--danger)",
               opacity: password.length > 0 ? 1 : 0.5
             },
             disabled: password.length === 0
-          }, "삭제")
+          }, "확인")
         )
       )
     )
