@@ -651,7 +651,7 @@ function App(){
     try {
       const row = await addRestaurantToDB(newRestaurant);
       setRestaurants(prev => [{id: row.id, ...newRestaurant, reviews: []}, ...prev]);
-      navigateTo("list");
+      navigateTo("detail", row.id);
     } catch (e) {
       console.error("Failed to add restaurant:", e);
       alert("맛집 등록에 실패했습니다. 다시 시도해주세요.");
