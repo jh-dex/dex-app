@@ -644,6 +644,8 @@ function App(){
   const [passwordInput, setPasswordInput] = useState("");
 
   // 테마 상태
+  const [listFilter, setListFilter] = useState("");
+
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem("matjip-theme") || "dark";
@@ -919,6 +921,16 @@ function App(){
     });
   }, [restaurants]);
 
+  const filteredRestaurants = useMemo(() => {
+    if (!listFilter.trim()) return sortedRestaurants;
+    const q = listFilter.trim().toLowerCase();
+    return sortedRestaurants.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      r.address.toLowerCase().includes(q) ||
+      (r.category && r.category.toLowerCase().includes(q))
+    );
+  }, [sortedRestaurants, listFilter]);
+
   if (loading) {
     return (
       <div style={{display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "var(--neutral-400)", fontSize: 15}}>
@@ -966,6 +978,12 @@ function App(){
             <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d={CHAT_PATH}/></svg>{restaurants.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
 
+          {restaurants.length>0&&<div style={{position:"relative",marginBottom:"var(--space-lg)"}}>
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="var(--neutral-400)" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}><circle cx={11} cy={11} r={8}/><line x1={21} y1={21} x2={16.65} y2={16.65}/></svg>
+            <input value={listFilter} onChange={e=>setListFilter(e.target.value)} placeholder="맛집 이름, 주소, 카테고리 검색..." style={{width:"100%",padding:"12px 14px 12px 42px",fontSize:15,border:"1px solid var(--neutral-200)",borderRadius:"var(--radius-md)",background:"var(--surface)",color:"var(--neutral-900)",outline:"none",boxSizing:"border-box",transition:"border-color .2s"}} onFocus={e=>e.target.style.borderColor="var(--brand)"} onBlur={e=>e.target.style.borderColor="var(--neutral-200)"}/>
+            {listFilter&&<button onClick={()=>setListFilter("")} style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",background:"var(--neutral-200)",border:"none",borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--neutral-500)",fontSize:13,lineHeight:1,padding:0}}>✕</button>}
+          </div>}
+
           {restaurants.length===0?
             <div style={{background:"var(--empty-grad)",borderRadius:"var(--radius-xl)",padding:"56px 28px",textAlign:"center",border:"1px solid var(--neutral-200)",boxShadow:"var(--shadow-sm)"}}>
               <div style={{width:84,height:84,margin:"0 auto 18px",borderRadius:"50%",background:"var(--brand-bg)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:38}}>🍽️</div>
@@ -974,8 +992,15 @@ function App(){
               <button className="btn-primary" onClick={()=>navigateTo("add")}>+ 첫 맛집 등록하기</button>
             </div>
           :
+          filteredRestaurants.length===0?
+            <div style={{textAlign:"center",padding:"48px 20px",color:"var(--neutral-400)"}}>
+              <div style={{fontSize:40,marginBottom:12}}>🔍</div>
+              <p style={{fontSize:16,fontWeight:600,color:"var(--neutral-500)",marginBottom:6}}>검색 결과가 없어요</p>
+              <p style={{fontSize:14}}>다른 키워드로 검색해보세요</p>
+            </div>
+          :
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
-            {sortedRestaurants.map((r, i)=>{const a=calculateAverage(r.reviews);return(
+            {filteredRestaurants.map((r, i)=>{const a=calculateAverage(r.reviews);return(
               <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>navigateTo("detail", r.id)}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1}}>
