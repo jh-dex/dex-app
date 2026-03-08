@@ -686,7 +686,13 @@ function App(){
 
   // 리뷰 삭제
   const deleteReview = useCallback(async (reviewId) => {
-    if (!window.confirm("이 리뷰를 삭제할까요?")) return;
+    const password = window.prompt("리뷰를 삭제하려면 비밀번호를 입력하세요:");
+    if (!password) return;
+
+    if (password !== "dexter") {
+      alert("비밀번호가 틀렸습니다.");
+      return;
+    }
 
     try {
       await deleteReviewFromDB(reviewId);
@@ -703,7 +709,15 @@ function App(){
 
   // 맛집 삭제
   const deleteRestaurant = useCallback(async () => {
-    if (!selectedId || !window.confirm("이 맛집과 리뷰를 모두 삭제할까요?")) return;
+    if (!selectedId) return;
+
+    const password = window.prompt("맛집과 모든 리뷰를 삭제하려면 비밀번호를 입력하세요:");
+    if (!password) return;
+
+    if (password !== "dexter") {
+      alert("비밀번호가 틀렸습니다.");
+      return;
+    }
 
     try {
       await deleteRestaurantFromDB(selectedId);
