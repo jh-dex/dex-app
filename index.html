@@ -221,6 +221,13 @@ async function deleteRestaurantFromDB(id) {
 // ═══════════════════════════════════════════════════════════
 // 카카오 JS SDK 키워드 검색
 // ═══════════════════════════════════════════════════════════
+// DDMC 빌딩 중심 좌표 (서울 마포구 상암동 매봉산로 75)
+const CENTER_COORDS = {
+  longitude: 126.893099753981,  // 경도 (x)
+  latitude: 37.578503275129634, // 위도 (y)
+  radius: 1000                  // 반경 1km (미터 단위)
+};
+
 const kakaoSearch = (query) => {
   return new Promise((resolve) => {
     // 카카오맵 API가 로드되지 않은 경우
@@ -248,7 +255,10 @@ const kakaoSearch = (query) => {
       },
       {
         category_group_code: "FD6", // 음식점 카테고리 코드
-        size: 10
+        size: 10,
+        x: CENTER_COORDS.longitude, // 중심 경도
+        y: CENTER_COORDS.latitude,  // 중심 위도
+        radius: CENTER_COORDS.radius // 반경 1km
       }
     );
   });
