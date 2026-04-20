@@ -374,6 +374,11 @@ async function addReviewToDB(restaurantId, data) {
     body.photo_urls = data.photoUrls;
   }
   const result = await supabase.post("reviews", body);
+  if (!Array.isArray(result) || !result[0] || !result[0].id) {
+    console.error("[db] review insert returned error:", result);
+    const detail = (result && (result.message || result.error || JSON.stringify(result))) || "(응답 없음)";
+    throw new Error(`DB_INSERT_FAILED:${String(detail).slice(0, 300)}`);
+  }
   return result[0];
 }
 
@@ -1246,12 +1251,13 @@ function App(){
       // DB 실패 시 이미 올린 사진 Storage에서 정리
       await Promise.all(uploadedUrls.map(deleteReviewPhoto));
       const msg = String(e?.message || "");
-      const isUpload = msg.startsWith("UPLOAD_FAILED");
-      if (isUpload) {
+      if (msg.startsWith("UPLOAD_FAILED")) {
         const parts = msg.split(":");
-        const status = parts[1] || "?";
-        const detail = parts.slice(2).join(":").trim() || "(응답 본문 없음)";
-        alert(`사진 업로드 실패 (HTTP ${status})\n\n${detail}\n\n자세한 응답은 개발자도구 Console 참고`);
+        alert(`사진 업로드 실패 (HTTP ${parts[1] || "?"})\n\n${parts.slice(2).join(":").trim() || "(응답 본문 없음)"}\n\n자세한 응답은 개발자도구 Console 참고`);
+      } else if (msg.startsWith("DB_INSERT_FAILED")) {
+        const detail = msg.slice("DB_INSERT_FAILED:".length);
+        const looksLikeMissingColumn = /photo_urls|column|schema/i.test(detail);
+        alert(`리뷰 저장 실패\n\n${detail}${looksLikeMissingColumn ? "\n\nreviews 테이블에 photo_urls text[] 컬럼이 필요합니다." : ""}`);
       } else {
         alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
       }
