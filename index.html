@@ -374,6 +374,11 @@ async function addReviewToDB(restaurantId, data) {
     body.photo_urls = data.photoUrls;
   }
   const result = await supabase.post("reviews", body);
+  if (!Array.isArray(result) || !result[0] || !result[0].id) {
+    console.error("[db] review insert returned error:", result);
+    const detail = (result && (result.message || result.error || JSON.stringify(result))) || "(응답 없음)";
+    throw new Error(`DB_INSERT_FAILED:${String(detail).slice(0, 300)}`);
+  }
   return result[0];
 }
 
@@ -1246,15 +1251,13 @@ function App(){
       // DB 실패 시 이미 올린 사진 Storage에서 정리
       await Promise.all(uploadedUrls.map(deleteReviewPhoto));
       const msg = String(e?.message || "");
-      const isUpload = msg.startsWith("UPLOAD_FAILED");
-      if (isUpload) {
+      if (msg.startsWith("UPLOAD_FAILED")) {
         const parts = msg.split(":");
-        const status = parts[1];
-        const detail = parts.slice(2).join(":").trim();
-        let hint = "잠시 후 다시 시도해주세요.";
-        if (status === "404" || /bucket.*not.*found/i.test(detail)) hint = `Storage 버킷 "${STORAGE_BUCKET}" 이(가) 없습니다.`;
-        else if (status === "401" || status === "403" || /row-level security|permission/i.test(detail)) hint = "Storage 업로드 권한이 없습니다. RLS 정책을 확인해주세요.";
-        alert(`사진 업로드 실패 (${status||"?"})\n${hint}`);
+        alert(`사진 업로드 실패 (HTTP ${parts[1] || "?"})\n\n${parts.slice(2).join(":").trim() || "(응답 본문 없음)"}\n\n자세한 응답은 개발자도구 Console 참고`);
+      } else if (msg.startsWith("DB_INSERT_FAILED")) {
+        const detail = msg.slice("DB_INSERT_FAILED:".length);
+        const looksLikeMissingColumn = /photo_urls|column|schema/i.test(detail);
+        alert(`리뷰 저장 실패\n\n${detail}${looksLikeMissingColumn ? "\n\nreviews 테이블에 photo_urls text[] 컬럼이 필요합니다." : ""}`);
       } else {
         alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
       }
@@ -1477,11 +1480,13 @@ function App(){
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
                     {r.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "2px 8px", marginBottom: 4}}>{r.category}</span>}
                     <p style={{fontSize:13,color:"var(--neutral-400)",display:"flex",alignItems:"center",gap:4,marginTop:4}}><Pin size={13} color="var(--neutral-400)"/>{r.address}</p>
-                    {dist&&<p style={{fontSize:13,color:"var(--neutral-500)",display:"inline-flex",alignItems:"baseline",gap:5,marginTop:6,fontWeight:500,lineHeight:1.2}}>
-                      <svg width={12} height={12} viewBox="0 0 24 24" fill="var(--brand)" style={{alignSelf:"center"}}><path d={WALK_PATH}/></svg>
-                      도보 <strong style={{fontSize:15,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.02em"}}>{dist.minutes}분</strong>
-                      <span style={{color:"var(--neutral-400)",fontSize:12}}>· {formatDistance(dist.meters)}</span>
-                    </p>}
+                    {dist&&<div style={{marginTop:8}}>
+                      <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px 4px 8px",background:"var(--neutral-100)",border:"1px solid var(--neutral-200)",borderRadius:100,fontSize:12,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
+                        <svg width={12} height={12} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
+                        도보 {dist.minutes}분
+                        <span style={{color:"var(--neutral-400)",fontWeight:500}}>· {formatDistance(dist.meters)}</span>
+                      </span>
+                    </div>}
                   </div>
                   {a>0&&<div style={{background:"var(--brand)",color:"var(--btn-fg)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:16,fontWeight:800,minWidth:44,textAlign:"center"}}>{a.toFixed(1)}</div>}
                 </div>
@@ -1504,11 +1509,13 @@ function App(){
                 <h1 style={{fontSize:30,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{selectedRestaurant.name}</h1>
                 {selectedRestaurant.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "3px 10px", marginBottom: 10}}>{selectedRestaurant.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{selectedRestaurant.address}</p>
-                {distances[selectedRestaurant.id]&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"inline-flex",alignItems:"baseline",gap:6,marginBottom:12,fontWeight:500,lineHeight:1.2}}>
-                  <svg width={14} height={14} viewBox="0 0 24 24" fill="var(--brand)" style={{alignSelf:"center"}}><path d={WALK_PATH}/></svg>
-                  DDMC에서 도보 <strong style={{fontSize:18,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.02em"}}>{distances[selectedRestaurant.id].minutes}분</strong>
-                  <span style={{color:"var(--neutral-400)",fontSize:13}}>· {formatDistance(distances[selectedRestaurant.id].meters)}</span>
-                </p>}
+                {distances[selectedRestaurant.id]&&<div style={{marginBottom:12}}>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px 5px 10px",background:"var(--neutral-100)",border:"1px solid var(--neutral-200)",borderRadius:100,fontSize:13,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
+                    <svg width={13} height={13} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
+                    DDMC에서 도보 {distances[selectedRestaurant.id].minutes}분
+                    <span style={{color:"var(--neutral-400)",fontWeight:500}}>· {formatDistance(distances[selectedRestaurant.id].meters)}</span>
+                  </span>
+                </div>}
                 {selectedRestaurant.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d={PHONE_PATH}/></svg>{selectedRestaurant.phone}</p>}
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
                   <a href={selectedRestaurant.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>지도에서 보기</a>
@@ -1575,7 +1582,7 @@ function App(){
                 </div>
                 <p style={{fontSize:15,color:"var(--neutral-700)",lineHeight:1.6,letterSpacing:"-.02em"}}>{rv.comment}</p>
                 {rv.photoUrls && rv.photoUrls.length > 0 && (
-                  <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(3, rv.photoUrls.length)}, 1fr)`,gap:6,marginTop:12}}>
+                  <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
                     {rv.photoUrls.map((url, pi) => (
                       <img
                         key={pi}
@@ -1583,9 +1590,9 @@ function App(){
                         alt={`${rv.nickname}의 리뷰 사진 ${pi+1}`}
                         loading="lazy"
                         onClick={() => setLightbox({urls: rv.photoUrls, index: pi})}
-                        style={{width:"100%",aspectRatio:"1",objectFit:"cover",borderRadius:"var(--radius-sm)",cursor:"zoom-in",background:"var(--neutral-100)",display:"block",transition:"transform .2s"}}
-                        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-                        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                        style={{width:88,height:88,objectFit:"cover",borderRadius:10,cursor:"zoom-in",background:"var(--neutral-100)",display:"block",border:"1px solid var(--neutral-200)",transition:"transform .15s, border-color .15s"}}
+                        onMouseEnter={e => {e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.borderColor = "var(--brand)"}}
+                        onMouseLeave={e => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.borderColor = "var(--neutral-200)"}}
                       />
                     ))}
                   </div>
