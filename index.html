@@ -1578,7 +1578,7 @@ function App(){
                 </div>
                 <p style={{fontSize:15,color:"var(--neutral-700)",lineHeight:1.6,letterSpacing:"-.02em"}}>{rv.comment}</p>
                 {rv.photoUrls && rv.photoUrls.length > 0 && (
-                  <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(3, rv.photoUrls.length)}, 1fr)`,gap:6,marginTop:12}}>
+                  <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
                     {rv.photoUrls.map((url, pi) => (
                       <img
                         key={pi}
@@ -1586,9 +1586,9 @@ function App(){
                         alt={`${rv.nickname}의 리뷰 사진 ${pi+1}`}
                         loading="lazy"
                         onClick={() => setLightbox({urls: rv.photoUrls, index: pi})}
-                        style={{width:"100%",aspectRatio:"1",objectFit:"cover",borderRadius:"var(--radius-sm)",cursor:"zoom-in",background:"var(--neutral-100)",display:"block",transition:"transform .2s"}}
-                        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.02)"}
-                        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                        style={{width:88,height:88,objectFit:"cover",borderRadius:10,cursor:"zoom-in",background:"var(--neutral-100)",display:"block",border:"1px solid var(--neutral-200)",transition:"transform .15s, border-color .15s"}}
+                        onMouseEnter={e => {e.currentTarget.style.transform = "scale(1.04)"; e.currentTarget.style.borderColor = "var(--brand)"}}
+                        onMouseLeave={e => {e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.borderColor = "var(--neutral-200)"}}
                       />
                     ))}
                   </div>
