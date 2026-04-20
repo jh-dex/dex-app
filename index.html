@@ -261,6 +261,10 @@ function compressImage(file, maxWidth = MAX_IMAGE_WIDTH, quality = IMAGE_QUALITY
 async function uploadReviewPhoto(blob) {
   const rand = Math.random().toString(36).slice(2, 10);
   const path = `${Date.now()}-${rand}.jpg`;
+  const formData = new FormData();
+  formData.append("cacheControl", "3600");
+  formData.append("", blob, path);
+
   const response = await fetch(
     `${SUPABASE_URL}/storage/v1/object/${STORAGE_BUCKET}/${path}`,
     {
@@ -268,15 +272,15 @@ async function uploadReviewPhoto(blob) {
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": "image/jpeg",
-        "x-upsert": "false",
+        "x-upsert": "true",
       },
-      body: blob,
+      body: formData,
     }
   );
   if (!response.ok) {
     const text = await response.text().catch(() => "");
-    throw new Error(`UPLOAD_FAILED:${response.status}:${text.slice(0, 120)}`);
+    console.error("[storage] upload failed", response.status, text);
+    throw new Error(`UPLOAD_FAILED:${response.status}:${text.slice(0, 200)}`);
   }
   return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${path}`;
 }
@@ -1241,8 +1245,19 @@ function App(){
       console.error("Failed to add review:", e);
       // DB 실패 시 이미 올린 사진 Storage에서 정리
       await Promise.all(uploadedUrls.map(deleteReviewPhoto));
-      const isUpload = String(e?.message || "").startsWith("UPLOAD_FAILED");
-      alert(isUpload ? "사진 업로드에 실패했습니다. 잠시 후 다시 시도해주세요." : "리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+      const msg = String(e?.message || "");
+      const isUpload = msg.startsWith("UPLOAD_FAILED");
+      if (isUpload) {
+        const parts = msg.split(":");
+        const status = parts[1];
+        const detail = parts.slice(2).join(":").trim();
+        let hint = "잠시 후 다시 시도해주세요.";
+        if (status === "404" || /bucket.*not.*found/i.test(detail)) hint = `Storage 버킷 "${STORAGE_BUCKET}" 이(가) 없습니다.`;
+        else if (status === "401" || status === "403" || /row-level security|permission/i.test(detail)) hint = "Storage 업로드 권한이 없습니다. RLS 정책을 확인해주세요.";
+        alert(`사진 업로드 실패 (${status||"?"})\n${hint}`);
+      } else {
+        alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
+      }
     } finally {
       setIsSubmittingReview(false);
     }
@@ -1518,7 +1533,7 @@ function App(){
               </div>
               <div><label style={LABEL_STYLE}>한줄평</label><input className="input-field" placeholder="이 맛집에 대한 한줄평을 남겨주세요" value={reviewComment} onChange={e => setReviewComment(e.target.value)}/></div>
               <div>
-                <label style={LABEL_STYLE}>사진 <span style={{color:"var(--neutral-400)",fontWeight:500}}>(선택, 최대 {MAX_PHOTOS_PER_REVIEW}장 · 자동 압축)</span></label>
+                <label style={LABEL_STYLE}>사진 <span style={{color:"var(--neutral-400)",fontWeight:500}}>(선택, 최대 {MAX_PHOTOS_PER_REVIEW}장)</span></label>
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(96px, 1fr))",gap:8}}>
                   {reviewPhotos.map((p, i) => (
                     <div key={i} style={{position:"relative",aspectRatio:"1",borderRadius:"var(--radius-sm)",overflow:"hidden",background:"var(--neutral-100)",border:"1px solid var(--neutral-200)"}}>
