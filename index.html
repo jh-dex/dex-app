@@ -1462,9 +1462,10 @@ function App(){
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
                     {r.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "2px 8px", marginBottom: 4}}>{r.category}</span>}
                     <p style={{fontSize:13,color:"var(--neutral-400)",display:"flex",alignItems:"center",gap:4,marginTop:4}}><Pin size={13} color="var(--neutral-400)"/>{r.address}</p>
-                    {dist&&<p style={{fontSize:12,color:"var(--bg)",display:"inline-flex",alignItems:"center",gap:5,marginTop:8,fontWeight:700,background:"var(--neutral-900)",padding:"4px 10px 4px 8px",borderRadius:100,letterSpacing:"-.01em",boxShadow:"var(--shadow-sm)"}}>
-                      <svg width={13} height={13} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
-                      도보 {dist.minutes}분 · {formatDistance(dist.meters)}
+                    {dist&&<p style={{fontSize:13,color:"var(--neutral-500)",display:"inline-flex",alignItems:"baseline",gap:5,marginTop:6,fontWeight:500,lineHeight:1.2}}>
+                      <svg width={12} height={12} viewBox="0 0 24 24" fill="var(--brand)" style={{alignSelf:"center"}}><path d={WALK_PATH}/></svg>
+                      도보 <strong style={{fontSize:15,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.02em"}}>{dist.minutes}분</strong>
+                      <span style={{color:"var(--neutral-400)",fontSize:12}}>· {formatDistance(dist.meters)}</span>
                     </p>}
                   </div>
                   {a>0&&<div style={{background:"var(--brand)",color:"var(--btn-fg)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:16,fontWeight:800,minWidth:44,textAlign:"center"}}>{a.toFixed(1)}</div>}
@@ -1488,9 +1489,10 @@ function App(){
                 <h1 style={{fontSize:30,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.2,marginBottom:8}}>{selectedRestaurant.name}</h1>
                 {selectedRestaurant.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "3px 10px", marginBottom: 10}}>{selectedRestaurant.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{selectedRestaurant.address}</p>
-                {distances[selectedRestaurant.id]&&<p style={{fontSize:13,color:"var(--bg)",display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,fontWeight:700,background:"var(--neutral-900)",padding:"6px 14px 6px 11px",borderRadius:100,letterSpacing:"-.01em",boxShadow:"var(--shadow-sm)"}}>
-                  <svg width={15} height={15} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
-                  DDMC에서 도보 {distances[selectedRestaurant.id].minutes}분 · {formatDistance(distances[selectedRestaurant.id].meters)}
+                {distances[selectedRestaurant.id]&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"inline-flex",alignItems:"baseline",gap:6,marginBottom:12,fontWeight:500,lineHeight:1.2}}>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="var(--brand)" style={{alignSelf:"center"}}><path d={WALK_PATH}/></svg>
+                  DDMC에서 도보 <strong style={{fontSize:18,fontWeight:800,color:"var(--neutral-900)",letterSpacing:"-.02em"}}>{distances[selectedRestaurant.id].minutes}분</strong>
+                  <span style={{color:"var(--neutral-400)",fontSize:13}}>· {formatDistance(distances[selectedRestaurant.id].meters)}</span>
                 </p>}
                 {selectedRestaurant.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d={PHONE_PATH}/></svg>{selectedRestaurant.phone}</p>}
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
