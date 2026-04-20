@@ -1249,12 +1249,9 @@ function App(){
       const isUpload = msg.startsWith("UPLOAD_FAILED");
       if (isUpload) {
         const parts = msg.split(":");
-        const status = parts[1];
-        const detail = parts.slice(2).join(":").trim();
-        let hint = "잠시 후 다시 시도해주세요.";
-        if (status === "404" || /bucket.*not.*found/i.test(detail)) hint = `Storage 버킷 "${STORAGE_BUCKET}" 이(가) 없습니다.`;
-        else if (status === "401" || status === "403" || /row-level security|permission/i.test(detail)) hint = "Storage 업로드 권한이 없습니다. RLS 정책을 확인해주세요.";
-        alert(`사진 업로드 실패 (${status||"?"})\n${hint}`);
+        const status = parts[1] || "?";
+        const detail = parts.slice(2).join(":").trim() || "(응답 본문 없음)";
+        alert(`사진 업로드 실패 (HTTP ${status})\n\n${detail}\n\n자세한 응답은 개발자도구 Console 참고`);
       } else {
         alert("리뷰 등록에 실패했습니다. 다시 시도해주세요.");
       }
