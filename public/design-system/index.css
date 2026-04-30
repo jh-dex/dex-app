@@ -1,0 +1,17 @@
+/* ═══════════════════════════════════════════
+   DESIGN SYSTEM — Entry point
+   "맛집기록" 앱의 디자인 시스템 (그린 브랜드)
+
+   순서가 중요합니다:
+   1) tokens     — CSS 변수 (색상/간격/라운드/그림자)
+   2) animations — @keyframes
+   3) base       — Reset / Body / Scrollbar
+   4) components — 버튼/입력/태그/칩/스켈레톤/FAB
+   5) responsive — 모바일 오버라이드
+   ═══════════════════════════════════════════ */
+
+@import "./tokens.css";
+@import "./animations.css";
+@import "./base.css";
+@import "./components.css";
+@import "./responsive.css";

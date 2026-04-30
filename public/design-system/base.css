@@ -1,0 +1,45 @@
+/* ═══════════════════════════════════════════
+   BASE — Reset / Body / Scrollbar / Page
+   ═══════════════════════════════════════════ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { overflow-x: hidden; scrollbar-gutter: stable; }
+body { overflow-x: hidden; }
+
+body {
+  font-family: var(--font-family-sans);
+  background: var(--bg);
+  min-height: 100vh;
+  color: var(--neutral-800);
+  transition: background .3s, color .3s;
+}
+
+/* Scrollbar */
+* { scrollbar-width: thin; scrollbar-color: var(--neutral-200) transparent; }
+html::-webkit-scrollbar,
+body::-webkit-scrollbar { width: 10px; height: 10px; }
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: var(--neutral-200);
+  border-radius: 100px;
+  border: 2px solid var(--bg);
+  transition: background .2s;
+}
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover { background: var(--neutral-300); }
+
+#root { min-height: 100vh; }
+
+/* Page transition */
+.page-enter {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all .35s var(--easing-out);
+}
+.page-exit {
+  opacity: 0;
+  transform: translateY(12px);
+}

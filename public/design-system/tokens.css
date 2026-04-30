@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — 색상 / 간격 / 라운드 / 그림자
+   브랜드: 그린 (#00FF4D / #00B341)
+   ═══════════════════════════════════════════ */
+
+/* ─── DARK THEME ─────────────────────────── */
+[data-theme="dark"] {
+  /* Brand */
+  --brand: #00FF4D;
+  --brand-light: #33FF85;
+  --brand-dark: #2FE861;
+  --brand-bg: rgba(0, 255, 77, .08);
+
+  /* Surface */
+  --bg: #000;
+  --surface: #0A0A0A;
+  --popover: #0F0F0F;
+
+  /* Neutral scale */
+  --neutral-50: #111;
+  --neutral-100: #1A1A1A;
+  --neutral-200: #1F1F1F;
+  --neutral-300: #2A2A2A;
+  --neutral-400: #888;
+  --neutral-500: #999;
+  --neutral-600: #AAA;
+  --neutral-700: #CCC;
+  --neutral-800: #E0E0E0;
+  --neutral-900: #FFF;
+
+  /* Header */
+  --header-bg: rgba(0, 0, 0, .85);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4), 0 0 0 1px rgba(255, 255, 255, .03);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .04);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .05);
+  --shadow-hover: 0 8px 30px rgba(0, 255, 77, .12), 0 0 0 1px rgba(0, 255, 77, .15);
+
+  /* Component-specific */
+  --btn-fg: #000;
+  --badge-bg: rgba(0, 255, 77, .1);
+  --badge-color: #00FF4D;
+  --empty-grad: linear-gradient(180deg, #0A0A0A, #0F0F0F);
+  --av-bg: 18%;
+  --av-fg: 65%;
+  --del-c: #FF3B30;
+  --del-bc: #3A1515;
+  --del-bg: rgba(255, 59, 48, .08);
+  --accent-grad: linear-gradient(135deg, var(--brand-bg), rgba(0, 255, 77, .04));
+  --pick-bc: rgba(0, 255, 77, .2);
+  --focus: rgba(0, 255, 77, .15);
+  --glow: rgba(0, 255, 77, .3);
+  --ring: #00FF4D;
+  --skeleton-base: #1A1A1A;
+  --skeleton-shimmer: rgba(255, 255, 255, .06);
+}
+
+/* ─── LIGHT THEME ────────────────────────── */
+[data-theme="light"] {
+  /* Brand (라이트는 명도 낮춰 가독성 확보) */
+  --brand: #00B341;
+  --brand-light: #33D46A;
+  --brand-dark: #009636;
+  --brand-bg: rgba(0, 179, 65, .06);
+
+  /* Surface */
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --popover: #FFFFFF;
+
+  /* Neutral scale */
+  --neutral-50: #F5F7F5;
+  --neutral-100: #EAEDEB;
+  --neutral-200: #D4DAD6;
+  --neutral-300: #BBC4BD;
+  --neutral-400: #8A9A8E;
+  --neutral-500: #6B7B6F;
+  --neutral-600: #4D5C50;
+  --neutral-700: #3A4A3D;
+  --neutral-800: #252E27;
+  --neutral-900: #111714;
+
+  /* Header */
+  --header-bg: rgba(255, 255, 255, .88);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 40, 10, .05), 0 1px 2px rgba(0, 40, 10, .03);
+  --shadow-md: 0 4px 16px rgba(0, 40, 10, .07), 0 2px 4px rgba(0, 40, 10, .04);
+  --shadow-lg: 0 12px 40px rgba(0, 40, 10, .09), 0 4px 12px rgba(0, 40, 10, .05);
+  --shadow-hover: 0 8px 30px rgba(0, 179, 65, .12), 0 4px 8px rgba(0, 40, 10, .06);
+
+  /* Component-specific */
+  --btn-fg: #FFF;
+  --badge-bg: rgba(0, 179, 65, .1);
+  --badge-color: #009636;
+  --empty-grad: linear-gradient(180deg, #FFFFFF, #F5F7F5);
+  --av-bg: 88%;
+  --av-fg: 35%;
+  --del-c: #D32F2F;
+  --del-bc: #F0C7C7;
+  --del-bg: #FFF6F6;
+  --accent-grad: linear-gradient(135deg, var(--brand-bg), rgba(0, 179, 65, .04));
+  --pick-bc: rgba(0, 179, 65, .25);
+  --focus: rgba(0, 179, 65, .12);
+  --glow: rgba(0, 179, 65, .25);
+  --ring: #00B341;
+  --skeleton-base: #EAEDEB;
+  --skeleton-shimmer: rgba(0, 0, 0, .05);
+}
+
+/* ─── 공통 토큰 (Radius / Spacing) ────────── */
+:root {
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  --font-family-sans: 'Pretendard', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --easing-out: cubic-bezier(.22, 1, .36, 1);
+}
