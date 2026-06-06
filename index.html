@@ -7,9 +7,10 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"/>
 <link rel="icon" href="./public/favicon.ico" />
 <script>
-// GitHub Pages 프로젝트 페이지 배포 경로
-// (예: https://<user>.github.io/dex-app)
-window.__BASE_PATH__ = "/dex-app";
+// 배포 환경에 따라 베이스 경로 자동 감지
+// - GitHub Pages 프로젝트 페이지(<user>.github.io/dex-app)에서는 "/dex-app"
+// - Vercel/커스텀 도메인/로컬에서는 루트("")에서 서빙
+window.__BASE_PATH__ = location.hostname.endsWith("github.io") ? "/dex-app" : "";
 
 // GitHub Pages SPA 라우팅: 404.html에서 전달받은 경로 복원
 // 앱이 로드되기 전에 실행되어야 함
