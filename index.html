@@ -42,6 +42,7 @@ window.__BASE_PATH__ = location.hostname.endsWith("github.io") ? "/dex-app" : ""
   --neutral-50:#111;--neutral-100:#1A1A1A;--neutral-200:#1F1F1F;
   --neutral-300:#2A2A2A;--neutral-400:#888;--neutral-500:#999;
   --neutral-600:#AAA;--neutral-700:#CCC;--neutral-800:#E0E0E0;--neutral-900:#FFF;
+  --chip-bg:var(--neutral-300);
   --header-bg:rgba(0,0,0,.85);
   --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.03);
   --shadow-md:0 4px 16px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);
@@ -70,6 +71,7 @@ window.__BASE_PATH__ = location.hostname.endsWith("github.io") ? "/dex-app" : ""
   --neutral-50:#F5F7F5;--neutral-100:#EAEDEB;--neutral-200:#D4DAD6;
   --neutral-300:#BBC4BD;--neutral-400:#8A9A8E;--neutral-500:#6B7B6F;
   --neutral-600:#4D5C50;--neutral-700:#3A4A3D;--neutral-800:#252E27;--neutral-900:#111714;
+  --chip-bg:var(--neutral-50);
   --header-bg:rgba(255,255,255,.88);
   --shadow-sm:0 1px 3px rgba(0,40,10,.05),0 1px 2px rgba(0,40,10,.03);
   --shadow-md:0 4px 16px rgba(0,40,10,.07),0 2px 4px rgba(0,40,10,.04);
@@ -1561,7 +1563,7 @@ function App(){
                     {r.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "2px 8px", marginBottom: 4}}>{r.category}</span>}
                     <p style={{fontSize:13,color:"var(--neutral-400)",display:"flex",alignItems:"center",gap:4,marginTop:4}}><Pin size={13} color="var(--neutral-400)"/>{r.address}</p>
                     {dist&&<div style={{marginTop:8}}>
-                      <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px 4px 8px",background:"var(--neutral-300)",borderRadius:100,fontSize:12,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
+                      <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px 4px 8px",background:"var(--chip-bg)",borderRadius:100,fontSize:12,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
                         <svg width={12} height={12} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
                         도보 {dist.minutes}분
                         <span style={{color:"var(--neutral-400)",fontWeight:500}}>· {formatDistance(dist.meters)}</span>
@@ -1590,7 +1592,7 @@ function App(){
                 {selectedRestaurant.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "3px 10px", marginBottom: 10}}>{selectedRestaurant.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{selectedRestaurant.address}</p>
                 {distances[selectedRestaurant.id]&&<div style={{marginBottom:12}}>
-                  <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px 5px 10px",background:"var(--neutral-300)",borderRadius:100,fontSize:13,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px 5px 10px",background:"var(--chip-bg)",borderRadius:100,fontSize:13,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
                     <svg width={13} height={13} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
                     DDMC에서 도보 {distances[selectedRestaurant.id].minutes}분
                     <span style={{color:"var(--neutral-400)",fontWeight:500}}>· {formatDistance(distances[selectedRestaurant.id].meters)}</span>
