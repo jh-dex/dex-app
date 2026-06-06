@@ -1433,8 +1433,6 @@ function App(){
     });
   }, [sortedRestaurants, listSearch, selectedCategory]);
 
-  const hasActiveFilter = listSearch.trim().length > 0 || selectedCategory !== null;
-
   const resetFilters = useCallback(() => {
     setListSearch("");
     setSelectedCategory(null);
@@ -1517,7 +1515,7 @@ function App(){
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>맛집을 검색하고 등록해서 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
-            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{hasActiveFilter?`${filteredRestaurants.length} / ${restaurants.length}`:`${restaurants.length}개`} 맛집</div>
+            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{restaurants.length}개 맛집</div>
             <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d={CHAT_PATH}/></svg>{restaurants.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
 
