@@ -922,6 +922,8 @@ function App(){
   const [view, setView] = useState(initialRoute.view);
   const [selectedId, setSelectedId] = useState(initialRoute.id);
   const [isAnimating, setIsAnimating] = useState(false);
+  // 뒤로가기/앞으로가기(popstate)로 돌아올 때는 진입 애니메이션을 생략
+  const [skipEntranceAnim, setSkipEntranceAnim] = useState(false);
 
   // 리스트 필터 상태
   const [listSearch, setListSearch] = useState("");
@@ -1078,16 +1080,11 @@ function App(){
 
   // 브라우저 뒤로가기/앞으로가기 처리
   useEffect(() => {
-    // 브라우저 자동 스크롤 복원을 끄고 앱이 직접 제어
-    // (뒤로가기 시 이전 위치로 복원되면 진입 애니메이션이 화면 밖에서
-    //  재생되어 보이지 않으므로, 항상 맨 위에서 시작하도록 함)
-    if ("scrollRestoration" in window.history) {
-      window.history.scrollRestoration = "manual";
-    }
-
     const handlePopState = () => {
       const route = parseRoute();
-      // 뒤로가기/앞으로가기는 애니메이션 없이 즉시 전환
+      // 뒤로가기/앞으로가기는 진입 애니메이션 없이 즉시 전환
+      // (스크롤 위치는 브라우저 기본 동작에 맡겨 유지)
+      setSkipEntranceAnim(true);
       setView(route.view);
       setSelectedId(route.id);
       if (route.view === "add") {
@@ -1098,7 +1095,6 @@ function App(){
         setShowManualForm(false);
         setManualForm({name:"", address:"", category:"", phone:"", mapLink:""});
       }
-      window.scrollTo({top: 0});
     };
 
     window.addEventListener("popstate", handlePopState);
@@ -1109,6 +1105,7 @@ function App(){
   const navigateTo = useCallback((destination, id = null) => {
     setIsAnimating(true);
     setTimeout(() => {
+      setSkipEntranceAnim(false);
       setView(destination);
       setSelectedId(id);
       setIsAnimating(false);
@@ -1517,7 +1514,7 @@ function App(){
 
         {/* ═══ LIST ═══ */}
         {view==="list"&&<div>
-          <div className="stagger-item" style={{padding:"var(--space-2xl) 0 var(--space-xl)"}}>
+          <div className={skipEntranceAnim?"":"stagger-item"} style={{padding:"var(--space-2xl) 0 var(--space-xl)"}}>
             <h1 className="hero-title" style={{fontSize:38,fontWeight:800,color:"var(--neutral-900)",lineHeight:1.25,marginBottom:12}}>회사 근처<br/><span style={{color:"var(--brand)"}}>맛집</span>을 함께 <span style={{color:"var(--brand)"}}>공유</span>하세요</h1>
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>맛집을 검색하고 등록해서 별점과 한줄평을 남겨보세요</p>
           </div>
@@ -1561,7 +1558,7 @@ function App(){
           :
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
             {filteredRestaurants.map((r, i)=>{const a=calculateAverage(r.reviews);const dist=distances[r.id];return(
-              <div key={r.id} className="card-item stagger-item" style={{animationDelay:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>navigateTo("detail", r.id)}>
+              <div key={r.id} className={`card-item ${skipEntranceAnim?"":"stagger-item"}`} style={{animationDelay:skipEntranceAnim?undefined:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>navigateTo("detail", r.id)}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1,minWidth:0}}>
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
