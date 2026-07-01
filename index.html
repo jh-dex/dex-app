@@ -1826,6 +1826,8 @@ function App(){
               <div style={{fontSize:36,marginBottom:12}}>🔍</div>
               <p style={{fontSize:15,color:"var(--neutral-500)",fontWeight:500,marginBottom:6}}>가게 이름으로 검색해보세요</p>
               <p style={{fontSize:13,color:"var(--neutral-400)",lineHeight:1.6}}>맛집 이름을 입력하면<br/>주소와 상세정보를 자동으로 가져옵니다</p>
+              {USE_KAKAO && !kakaoReady && <p style={{fontSize:13,color:"var(--del-c)",marginTop:14,lineHeight:1.6}}>카카오 지도 검색을 불러오지 못했어요.<br/>아래 버튼으로 직접 입력해 등록할 수 있어요.</p>}
+              <button className="btn-secondary" style={{marginTop:18,fontSize:14}} onClick={() => {setShowManualForm(true); setManualForm({name:"", address:"", category:"", mapLink:""});}}>직접 입력하기</button>
             </div>}
           </div>
         </div>}
