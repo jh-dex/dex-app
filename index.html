@@ -478,6 +478,13 @@ const extractCategory = (categoryString) => {
   return parts.length > 1 ? parts.slice(1).join(" > ") : parts[0];
 };
 
+// 직접 입력 시 선택 가능한 카테고리 — 카카오맵 음식점(FD6) 분류 기준 + 기타
+// 자유 입력을 막아 카카오 카테고리 체계에서 벗어난 값이 들어오지 않게 한다.
+const MANUAL_CATEGORIES = [
+  "한식", "중식", "일식", "양식", "아시아음식", "분식",
+  "패스트푸드", "치킨", "피자", "술집", "카페·디저트", "뷔페", "기타"
+];
+
 // Haversine 공식으로 두 좌표 간 직선거리(m) 계산
 const haversineMeters = (lat1, lon1, lat2, lon2) => {
   const R = 6371000;
@@ -944,7 +951,7 @@ function App(){
   const [pickedPlace, setPickedPlace] = useState(null);
   const [kakaoReady, setKakaoReady] = useState(false);
   const [showManualForm, setShowManualForm] = useState(false);
-  const [manualForm, setManualForm] = useState({name:"", address:"", category:"", phone:"", mapLink:""});
+  const [manualForm, setManualForm] = useState({name:"", address:"", category:"", mapLink:""});
   const [isSubmittingManual, setIsSubmittingManual] = useState(false);
   const searchTimer = useRef(null);
   const isNavigating = useRef(false);
@@ -1097,7 +1104,7 @@ function App(){
         setHasSearched(false);
         setPickedPlace(null);
         setShowManualForm(false);
-        setManualForm({name:"", address:"", category:"", phone:"", mapLink:""});
+        setManualForm({name:"", address:"", category:"", mapLink:""});
       }
     };
 
@@ -1119,7 +1126,7 @@ function App(){
         setHasSearched(false);
         setPickedPlace(null);
         setShowManualForm(false);
-        setManualForm({name:"", address:"", category:"", phone:"", mapLink:""});
+        setManualForm({name:"", address:"", category:"", mapLink:""});
       }
       // URL 업데이트 (브라우저 히스토리에 기록, # 없이)
       const newPath = buildPath(destination, id);
@@ -1252,8 +1259,8 @@ function App(){
     const newRestaurant = {
       name,
       address,
-      category: manualForm.category.trim(),
-      phone: manualForm.phone.trim(),
+      category: manualForm.category,
+      phone: "",
       mapLink: manualForm.mapLink.trim() || "https://map.kakao.com"
     };
 
@@ -1731,7 +1738,7 @@ function App(){
                     style={{fontSize:14,padding:"10px 18px"}}
                     onClick={() => {
                       setShowManualForm(true);
-                      setManualForm({name: searchQuery.trim(), address:"", category:"", phone:"", mapLink:""});
+                      setManualForm({name: searchQuery.trim(), address:"", category:"", mapLink:""});
                       setSearchResults([]);
                       setHasSearched(false);
                     }}
@@ -1766,7 +1773,7 @@ function App(){
             {showManualForm && !pickedPlace && <div style={{marginTop:20,padding:"24px",background:"var(--neutral-50)",border:"1px solid var(--neutral-200)",borderRadius:"var(--radius-lg)",animation:"fadeUp .3s ease forwards"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                 <h2 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.02em"}}>직접 입력하기</h2>
-                <button onClick={() => {setShowManualForm(false); setManualForm({name:"", address:"", category:"", phone:"", mapLink:""});}} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--neutral-400)"}} aria-label="닫기"><svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={CLOSE_PATH}/></svg></button>
+                <button onClick={() => {setShowManualForm(false); setManualForm({name:"", address:"", category:"", mapLink:""});}} style={{background:"none",border:"none",cursor:"pointer",padding:4,color:"var(--neutral-400)"}} aria-label="닫기"><svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d={CLOSE_PATH}/></svg></button>
               </div>
               <p style={{fontSize:13,color:"var(--neutral-500)",marginBottom:18,lineHeight:1.6}}>카카오맵 검색에 안 뜨는 가게라면 직접 입력해주세요.<br/>주소는 카카오맵에서 복사해서 붙여넣으면 거리/도보 시간이 자동 계산됩니다.</p>
 
@@ -1782,15 +1789,23 @@ function App(){
                   <p style={{fontSize:12,color:"var(--neutral-400)",marginTop:4}}>카카오맵에서 도로명 주소를 복사해 붙여넣으세요</p>
                 </div>
 
-                <div style={{display:"flex",gap:12}}>
-                  <div style={{flex:1}}>
-                    <label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-700)",marginBottom:6}}>카테고리</label>
-                    <input className="input-field" style={{fontSize:15}} placeholder="예: 한식, 분식" value={manualForm.category} onChange={e => setManualForm(prev => ({...prev, category: e.target.value}))} maxLength={40}/>
+                <div>
+                  <label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-700)",marginBottom:8}}>카테고리</label>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
+                    {MANUAL_CATEGORIES.map(cat => {
+                      const selected = manualForm.category === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          className="filter-chip"
+                          onClick={() => setManualForm(prev => ({...prev, category: selected ? "" : cat}))}
+                          style={selected ? {borderColor:"var(--brand)",color:"var(--brand)",background:"var(--brand-bg)",fontWeight:600} : undefined}
+                        >{cat}</button>
+                      );
+                    })}
                   </div>
-                  <div style={{flex:1}}>
-                    <label style={{display:"block",fontSize:13,fontWeight:600,color:"var(--neutral-700)",marginBottom:6}}>전화번호</label>
-                    <input className="input-field" style={{fontSize:15}} placeholder="02-000-0000" value={manualForm.phone} onChange={e => setManualForm(prev => ({...prev, phone: e.target.value}))} maxLength={20}/>
-                  </div>
+                  <p style={{fontSize:12,color:"var(--neutral-400)",marginTop:6}}>카카오맵 분류 기준입니다. 해당 없으면 “기타”를 선택하세요 (선택)</p>
                 </div>
 
                 <div>
@@ -1802,7 +1817,7 @@ function App(){
               {isManualFormDuplicate && <p style={{marginTop:12,fontSize:13,color:"var(--del-c)"}}>이미 등록된 가게라 추가할 수 없어요.</p>}
 
               <div style={{display:"flex",gap:12,justifyContent:"flex-end",marginTop:20}}>
-                <button className="btn-secondary" onClick={() => {setShowManualForm(false); setManualForm({name:"", address:"", category:"", phone:"", mapLink:""});}}>취소</button>
+                <button className="btn-secondary" onClick={() => {setShowManualForm(false); setManualForm({name:"", address:"", category:"", mapLink:""});}}>취소</button>
                 <button className="btn-primary" onClick={submitManual} disabled={isSubmittingManual || isManualFormDuplicate || !manualForm.name.trim() || !manualForm.address.trim()}>{isSubmittingManual ? "등록 중..." : "이 맛집 등록하기"}</button>
               </div>
             </div>}
