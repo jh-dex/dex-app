@@ -32,32 +32,34 @@ window.__BASE_PATH__ = location.hostname.endsWith("github.io") ? "/dex-app" : ""
 <style>
 /* ═══════════════════════════════════════════
    DARK THEME  — MD 스펙 기준
-   primary:#00FF4D  accent:#00FF4D
-   bg:#000  card:#0A0A0A  popover:#0F0F0F
+   primary:#2ADF9D  accent:#2ADF9D
+   bg:#0C0C0E  card:#131316  popover:#18181C
    ═══════════════════════════════════════════ */
 [data-theme="dark"]{
-  --brand:#00FF4D;--brand-light:#33FF85;--brand-dark:#2FE861;
-  --brand-bg:rgba(0,255,77,.08);
-  --bg:#000;--surface:#0A0A0A;--popover:#0F0F0F;
-  --neutral-50:#111;--neutral-100:#1A1A1A;--neutral-200:#1F1F1F;
-  --neutral-300:#2A2A2A;--neutral-400:#888;--neutral-500:#999;
-  --neutral-600:#AAA;--neutral-700:#CCC;--neutral-800:#E0E0E0;--neutral-900:#FFF;
-  --chip-bg:var(--neutral-300);
-  --header-bg:rgba(0,0,0,.85);
-  --shadow-sm:0 1px 2px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.03);
-  --shadow-md:0 4px 16px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);
-  --shadow-lg:0 12px 40px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.05);
-  --shadow-hover:0 8px 30px rgba(0,255,77,.12),0 0 0 1px rgba(0,255,77,.15);
-  --btn-fg:#000;
-  --badge-bg:rgba(0,255,77,.1);--badge-color:#00FF4D;
-  --empty-grad:linear-gradient(180deg,#0A0A0A,#0F0F0F);
+  --brand:#2ADF9D;--brand-light:#63EEBB;--brand-dark:#14CC89;
+  --brand-bg:rgba(42,223,157,.08);
+  --bg:#0C0C0E;--surface:#131316;--popover:#18181C;
+  --neutral-50:#1A1A1F;--neutral-100:#222228;--neutral-200:#2A2A32;
+  --neutral-300:#3D3D48;--neutral-400:#7E7E90;--neutral-500:#9696A6;
+  --neutral-600:#A0A0B0;--neutral-700:#C4C4D0;--neutral-800:#E2E2EA;--neutral-900:#F5F5F8;
+  --chip-bg:var(--neutral-100);
+  --header-bg:rgba(12,12,14,.88);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.04);
+  --shadow-md:0 4px 20px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.05);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);
+  --shadow-hover:0 8px 28px rgba(42,223,157,.10),0 0 0 1px rgba(42,223,157,.12);
+  --btn-fg:#0C0C0E;
+  --badge-bg:rgba(42,223,157,.10);--badge-color:#2ADF9D;
+  --empty-grad:linear-gradient(180deg,#131316,#18181C);
   --av-bg:18%;--av-fg:65%;
-  --del-c:#FF3B30;--del-bc:#3A1515;--del-bg:rgba(255,59,48,.08);
-  --accent-grad:linear-gradient(135deg,var(--brand-bg),rgba(0,255,77,.04));
-  --pick-bc:rgba(0,255,77,.2);
-  --focus:rgba(0,255,77,.15);--glow:rgba(0,255,77,.3);
-  --ring:#00FF4D;
-  --skeleton-base:#1A1A1A;--skeleton-shimmer:rgba(255,255,255,.06)
+  --del-c:#F87171;--del-bc:#3A1B1B;--del-bg:rgba(248,113,113,.06);
+  --accent-grad:linear-gradient(135deg,var(--brand-bg),rgba(42,223,157,.03));
+  --pick-bc:rgba(42,223,157,.18);
+  --focus:rgba(42,223,157,.12);--glow:rgba(42,223,157,.20);
+  --ring:#2ADF9D;
+  --star-filled:#FBBF24;--star-empty:#555568;
+  --rating-bg:var(--neutral-100);--rating-fg:var(--neutral-800);
+  --skeleton-base:#222228;--skeleton-shimmer:rgba(255,255,255,.04)
 }
 
 /* ═══════════════════════════════════════════
@@ -65,31 +67,33 @@ window.__BASE_PATH__ = location.hostname.endsWith("github.io") ? "/dex-app" : ""
    primary 명도를 낮춰 가독성 확보
    ═══════════════════════════════════════════ */
 [data-theme="light"]{
-  --brand:#00B341;--brand-light:#33D46A;--brand-dark:#009636;
-  --brand-bg:rgba(0,179,65,.06);
-  --bg:#FFFFFF;--surface:#FFFFFF;--popover:#FFFFFF;
-  --neutral-50:#F5F7F5;--neutral-100:#EAEDEB;--neutral-200:#D4DAD6;
-  --neutral-300:#BBC4BD;--neutral-400:#8A9A8E;--neutral-500:#6B7B6F;
-  --neutral-600:#4D5C50;--neutral-700:#3A4A3D;--neutral-800:#252E27;--neutral-900:#111714;
+  --brand:#059669;--brand-light:#34D399;--brand-dark:#047857;
+  --brand-bg:rgba(5,150,105,.05);
+  --bg:#FAFAFA;--surface:#FFFFFF;--popover:#FFFFFF;
+  --neutral-50:#F5F5F5;--neutral-100:#EBEBEB;--neutral-200:#D6D6D6;
+  --neutral-300:#B8B8B8;--neutral-400:#8A8A8A;--neutral-500:#6B6B6B;
+  --neutral-600:#525252;--neutral-700:#3D3D3D;--neutral-800:#262626;--neutral-900:#141414;
   --chip-bg:var(--neutral-50);
-  --header-bg:rgba(255,255,255,.88);
-  --shadow-sm:0 1px 3px rgba(0,40,10,.05),0 1px 2px rgba(0,40,10,.03);
-  --shadow-md:0 4px 16px rgba(0,40,10,.07),0 2px 4px rgba(0,40,10,.04);
-  --shadow-lg:0 12px 40px rgba(0,40,10,.09),0 4px 12px rgba(0,40,10,.05);
-  --shadow-hover:0 8px 30px rgba(0,179,65,.12),0 4px 8px rgba(0,40,10,.06);
+  --header-bg:rgba(250,250,250,.90);
+  --shadow-sm:0 1px 3px rgba(0,0,0,.04),0 0 0 1px rgba(0,0,0,.03);
+  --shadow-md:0 4px 16px rgba(0,0,0,.06),0 0 0 1px rgba(0,0,0,.03);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.04);
+  --shadow-hover:0 8px 28px rgba(5,150,105,.08),0 0 0 1px rgba(5,150,105,.10);
   --btn-fg:#FFF;
-  --badge-bg:rgba(0,179,65,.1);--badge-color:#009636;
-  --empty-grad:linear-gradient(180deg,#FFFFFF,#F5F7F5);
+  --badge-bg:rgba(5,150,105,.08);--badge-color:#047857;
+  --empty-grad:linear-gradient(180deg,#FFFFFF,#F5F5F5);
   --av-bg:88%;--av-fg:35%;
-  --del-c:#D32F2F;--del-bc:#F0C7C7;--del-bg:#FFF6F6;
-  --accent-grad:linear-gradient(135deg,var(--brand-bg),rgba(0,179,65,.04));
-  --pick-bc:rgba(0,179,65,.25);
-  --focus:rgba(0,179,65,.12);--glow:rgba(0,179,65,.25);
-  --ring:#00B341;
-  --skeleton-base:#EAEDEB;--skeleton-shimmer:rgba(0,0,0,.05)
+  --del-c:#DC2626;--del-bc:#FCA5A5;--del-bg:#FEF2F2;
+  --accent-grad:linear-gradient(135deg,var(--brand-bg),rgba(5,150,105,.03));
+  --pick-bc:rgba(5,150,105,.20);
+  --focus:rgba(5,150,105,.10);--glow:rgba(5,150,105,.18);
+  --ring:#059669;
+  --star-filled:#D97706;--star-empty:#E0E0E0;
+  --rating-bg:var(--neutral-50);--rating-fg:var(--neutral-800);
+  --skeleton-base:#EBEBEB;--skeleton-shimmer:rgba(0,0,0,.04)
 }
 
-:root{--radius-sm:8px;--radius-md:14px;--radius-lg:20px;--radius-xl:28px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
+:root{--radius-sm:8px;--radius-md:12px;--radius-lg:16px;--radius-xl:20px;--space-xs:4px;--space-sm:8px;--space-md:16px;--space-lg:24px;--space-xl:40px;--space-2xl:64px}
 *{box-sizing:border-box;margin:0;padding:0}
 html{overflow-x:hidden;scrollbar-gutter:stable}
 body{overflow-x:hidden}
@@ -101,14 +105,14 @@ html::-webkit-scrollbar-thumb,body::-webkit-scrollbar-thumb{background:var(--neu
 html::-webkit-scrollbar-thumb:hover,body::-webkit-scrollbar-thumb:hover{background:var(--neutral-300)}
 #root{min-height:100vh}
 .page-enter{opacity:1;transform:translateY(0);transition:all .35s cubic-bezier(.22,1,.36,1)}.page-exit{opacity:0;transform:translateY(12px)}
-.card-item{transition:all .3s cubic-bezier(.22,1,.36,1);cursor:pointer}.card-item:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover)}
-.btn-primary{background:var(--brand);color:var(--btn-fg);border:none;padding:14px 32px;border-radius:var(--radius-md);font-family:inherit;font-weight:600;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
+.card-item{transition:all .35s cubic-bezier(.16,1,.3,1);cursor:pointer}.card-item:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.btn-primary{background:var(--brand);color:var(--btn-fg);border:none;padding:13px 28px;border-radius:var(--radius-md);font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);letter-spacing:-.01em}
 @media (hover: hover){.btn-primary:hover{background:var(--brand-dark);transform:translateY(-1px);box-shadow:0 4px 12px var(--glow)}}
 .btn-primary:active{background:var(--brand-dark)}
 .btn-primary:disabled{background:var(--neutral-300);color:var(--neutral-400);cursor:not-allowed;transform:none;box-shadow:none}
-.btn-secondary{background:transparent;color:var(--neutral-600);border:1.5px solid var(--neutral-200);padding:12px 28px;border-radius:var(--radius-md);font-family:inherit;font-weight:500;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:-.02em}
+.btn-secondary{background:transparent;color:var(--neutral-600);border:1px solid var(--neutral-200);padding:12px 24px;border-radius:var(--radius-md);font-family:inherit;font-weight:500;font-size:14px;cursor:pointer;transition:all .25s cubic-bezier(.16,1,.3,1);letter-spacing:-.01em}
 .btn-secondary:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
-.input-field{width:100%;padding:14px 18px;border:1.5px solid var(--neutral-200);border-radius:var(--radius-md);font-family:inherit;font-size:16px;color:var(--neutral-800);background:var(--popover);transition:all .2s;outline:none;letter-spacing:-.02em}
+.input-field{width:100%;padding:12px 16px;border:1px solid var(--neutral-200);border-radius:var(--radius-md);font-family:inherit;font-size:15px;color:var(--neutral-800);background:var(--popover);transition:all .2s;outline:none;letter-spacing:-.01em}
 .input-field::placeholder{color:var(--neutral-400)}.input-field:focus{border-color:var(--ring);box-shadow:0 0 0 3px var(--focus)}
 .stagger-item{opacity:0;transform:translateY(16px);animation:fadeUp .5s cubic-bezier(.22,1,.36,1) forwards}
 @keyframes fadeUp{to{opacity:1;transform:translateY(0)}}@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
@@ -117,8 +121,8 @@ html::-webkit-scrollbar-thumb:hover,body::-webkit-scrollbar-thumb:hover{backgrou
 .review-item{animation:slideDown .3s ease forwards}
 .search-item{padding:16px 20px;cursor:pointer;transition:all .15s;border-bottom:1px solid var(--neutral-100)}.search-item:hover{background:var(--brand-bg)}.search-item:last-child{border-bottom:none}
 .tag{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:100px;font-size:12px;font-weight:600;letter-spacing:-.02em}
-.theme-btn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--neutral-200);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--neutral-500);transition:all .2s;padding:0;flex-shrink:0}.theme-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
-.filter-chip{flex-shrink:0;padding:8px 16px;border-radius:999px;border:1.5px solid var(--neutral-200);background:var(--surface);color:var(--neutral-600);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;letter-spacing:-.02em}
+.theme-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--neutral-200);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--neutral-500);transition:all .2s;padding:0;flex-shrink:0}.theme-btn:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
+.filter-chip{flex-shrink:0;padding:7px 15px;border-radius:999px;border:1px solid var(--neutral-200);background:var(--surface);color:var(--neutral-500);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap;letter-spacing:-.01em}
 .filter-chip:hover{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
 .filter-chip[data-active="true"]{background:var(--brand);color:var(--btn-fg);border-color:var(--brand)}
 .filter-chip[data-active="true"]:hover{background:var(--brand-dark);border-color:var(--brand-dark);color:var(--btn-fg)}
@@ -126,7 +130,7 @@ html::-webkit-scrollbar-thumb:hover,body::-webkit-scrollbar-thumb:hover{backgrou
 .filter-row::-webkit-scrollbar{display:none}
 
 main.container-main{padding-bottom:calc(120px + env(safe-area-inset-bottom))!important}
-.fab{position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:40;display:inline-flex;align-items:center;gap:8px;padding:14px 22px;background:var(--brand);color:var(--btn-fg);border:none;border-radius:999px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 6px 24px var(--glow),0 2px 8px rgba(0,0,0,.18);letter-spacing:-.02em;transition:transform .2s cubic-bezier(.22,1,.36,1),box-shadow .2s,opacity .25s;animation:fabIn .35s cubic-bezier(.22,1,.36,1)}
+.fab{position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:40;display:inline-flex;align-items:center;gap:8px;padding:13px 20px;background:var(--brand);color:var(--btn-fg);border:none;border-radius:999px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;box-shadow:0 4px 20px var(--glow),0 2px 6px rgba(0,0,0,.15);letter-spacing:-.01em;transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s,opacity .25s;animation:fabIn .4s cubic-bezier(.16,1,.3,1)}
 @keyframes fabIn{from{opacity:0;transform:translateY(16px) scale(.9)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media (hover:hover){.fab:hover{transform:translateY(-2px);box-shadow:0 10px 28px var(--glow),0 4px 12px rgba(0,0,0,.22)}}
 .fab:active{transform:translateY(0) scale(.97)}
@@ -739,19 +743,19 @@ const Stars = ({rating, size = 18}) => {
 
   return React.createElement("span", {style: {display: "inline-flex", gap: 2, alignItems: "center"}}, [
     ...Array(fullStars).fill(0).map((_, i) =>
-      StarSvg({fill: "var(--brand)", svgKey: "f" + i})
+      StarSvg({fill: "var(--star-filled)", svgKey: "f" + i})
     ),
     hasHalf && React.createElement("svg", {key: "h", width: size, height: size, viewBox: "0 0 24 24"},
       React.createElement("defs", null,
         React.createElement("linearGradient", {id: "hs"},
-          React.createElement("stop", {offset: "50%", stopColor: "var(--brand)"}),
-          React.createElement("stop", {offset: "50%", stopColor: "var(--neutral-300)"})
+          React.createElement("stop", {offset: "50%", stopColor: "var(--star-filled)"}),
+          React.createElement("stop", {offset: "50%", stopColor: "var(--star-empty)"})
         )
       ),
       React.createElement("path", {d: STAR_PATH, fill: "url(#hs)"})
     ),
     ...Array(emptyStars).fill(0).map((_, i) =>
-      StarSvg({fill: "var(--neutral-300)", svgKey: "e" + i})
+      StarSvg({fill: "var(--star-empty)", svgKey: "e" + i})
     ),
   ].filter(Boolean));
 };
@@ -774,7 +778,7 @@ const StarInput = ({value, onChange}) => {
             width={28}
             height={28}
             viewBox="0 0 24 24"
-            fill={active ? "var(--brand)" : "var(--neutral-300)"}
+            fill={active ? "var(--star-filled)" : "var(--star-empty)"}
             stroke="none"
             onClick={() => onChange(score)}
             onMouseEnter={() => setHover(score)}
@@ -861,9 +865,9 @@ const LABEL_STYLE = {
 
 const CATEGORY_TAG_STYLE = {
   fontSize: 12,
-  color: "var(--brand)",
-  fontWeight: 600,
-  background: "var(--brand-bg)",
+  color: "var(--neutral-500)",
+  fontWeight: 500,
+  background: "var(--chip-bg)",
   borderRadius: 100,
   display: "inline-block"
 };
@@ -1463,7 +1467,7 @@ function App(){
           </div>
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
             {[0,1,2,3].map(i => (
-              <div key={i} style={{background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}}>
+              <div key={i} style={{background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-100)",display:"flex",flexDirection:"column",gap:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",gap:12}}>
                   <div style={{flex:1}}>
                     <div className="skeleton" style={{height:20,width:"70%",marginBottom:8}}/>
@@ -1519,7 +1523,7 @@ function App(){
             <p style={{fontSize:16,color:"var(--neutral-500)",letterSpacing:"-.02em",lineHeight:1.6}}>맛집을 검색하고 등록해서 별점과 한줄평을 남겨보세요</p>
           </div>
           <div style={{display:"flex",gap:12,marginBottom:"var(--space-lg)",flexWrap:"wrap"}}>
-            <div className="tag" style={{background:"var(--brand-bg)",color:"var(--brand)"}}><Pin size={14}/>{restaurants.length}개 맛집</div>
+            <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><Pin size={14}/>{restaurants.length}개 맛집</div>
             <div className="tag" style={{background:"var(--neutral-100)",color:"var(--neutral-600)"}}><svg width={14} height={14} viewBox="0 0 24 24" fill="currentColor"><path d={CHAT_PATH}/></svg>{restaurants.reduce((s,r)=>s+r.reviews.length,0)}개 리뷰</div>
           </div>
 
@@ -1558,21 +1562,21 @@ function App(){
           :
           <div className="responsive-grid" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:20}}>
             {filteredRestaurants.map((r, i)=>{const a=calculateAverage(r.reviews);const dist=distances[r.id];return(
-              <div key={r.id} className={`card-item ${skipEntranceAnim?"":"stagger-item"}`} style={{animationDelay:skipEntranceAnim?undefined:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-200)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>navigateTo("detail", r.id)}>
+              <div key={r.id} className={`card-item ${skipEntranceAnim?"":"stagger-item"}`} style={{animationDelay:skipEntranceAnim?undefined:`${i*.08}s`,background:"var(--surface)",borderRadius:"var(--radius-lg)",padding:"var(--space-lg)",boxShadow:"var(--shadow-sm)",border:"1px solid var(--neutral-100)",display:"flex",flexDirection:"column",gap:14}} onClick={()=>navigateTo("detail", r.id)}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
                   <div style={{flex:1,minWidth:0}}>
                     <h3 style={{fontSize:18,fontWeight:700,color:"var(--neutral-900)",letterSpacing:"-.03em",marginBottom:4}}>{r.name}</h3>
                     {r.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "2px 8px", marginBottom: 4}}>{r.category}</span>}
                     <p style={{fontSize:13,color:"var(--neutral-400)",display:"flex",alignItems:"center",gap:4,marginTop:4}}><Pin size={13} color="var(--neutral-400)"/>{r.address}</p>
                     {dist&&<div style={{marginTop:8}}>
-                      <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px 4px 8px",background:"var(--chip-bg)",borderRadius:100,fontSize:12,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
-                        <svg width={12} height={12} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
+                      <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px 4px 8px",background:"var(--chip-bg)",border:"1px solid var(--neutral-200)",borderRadius:100,fontSize:12,fontWeight:500,color:"var(--neutral-600)",letterSpacing:"-.01em",lineHeight:1}}>
+                        <svg width={12} height={12} viewBox="0 0 24 24" fill="var(--neutral-500)"><path d={WALK_PATH}/></svg>
                         도보 {dist.minutes}분
-                        <span style={{color:"var(--neutral-400)",fontWeight:500}}>· {formatDistance(dist.meters)}</span>
+                        <span style={{color:"var(--neutral-400)",fontWeight:400}}>· {formatDistance(dist.meters)}</span>
                       </span>
                     </div>}
                   </div>
-                  {a>0&&<div style={{background:"var(--brand)",color:"var(--btn-fg)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:16,fontWeight:800,minWidth:44,textAlign:"center"}}>{a.toFixed(1)}</div>}
+                  {a>0&&<div style={{background:"var(--rating-bg)",color:"var(--rating-fg)",borderRadius:"var(--radius-sm)",padding:"6px 10px",fontSize:15,fontWeight:700,minWidth:42,textAlign:"center",border:"1px solid var(--neutral-200)"}}>{a.toFixed(1)}</div>}
                 </div>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                   <div style={{display:"flex",alignItems:"center",gap:8}}><Stars rating={a} size={16}/><span style={{fontSize:13,color:"var(--neutral-400)",fontWeight:500}}>리뷰 {r.reviews.length}개</span></div>
@@ -1594,20 +1598,20 @@ function App(){
                 {selectedRestaurant.category&&<span style={{...CATEGORY_TAG_STYLE, padding: "3px 10px", marginBottom: 10}}>{selectedRestaurant.category}</span>}
                 <p style={{fontSize:15,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:8}}><Pin size={16} color="var(--neutral-400)"/>{selectedRestaurant.address}</p>
                 {distances[selectedRestaurant.id]&&<div style={{marginBottom:12}}>
-                  <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px 5px 10px",background:"var(--chip-bg)",borderRadius:100,fontSize:13,fontWeight:600,color:"var(--neutral-700)",letterSpacing:"-.01em",lineHeight:1}}>
-                    <svg width={13} height={13} viewBox="0 0 24 24" fill="var(--brand)"><path d={WALK_PATH}/></svg>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:6,padding:"5px 12px 5px 10px",background:"var(--chip-bg)",border:"1px solid var(--neutral-200)",borderRadius:100,fontSize:13,fontWeight:500,color:"var(--neutral-600)",letterSpacing:"-.01em",lineHeight:1}}>
+                    <svg width={13} height={13} viewBox="0 0 24 24" fill="var(--neutral-500)"><path d={WALK_PATH}/></svg>
                     DDMC에서 도보 {distances[selectedRestaurant.id].minutes}분
-                    <span style={{color:"var(--neutral-400)",fontWeight:500}}>· {formatDistance(distances[selectedRestaurant.id].meters)}</span>
+                    <span style={{color:"var(--neutral-400)",fontWeight:400}}>· {formatDistance(distances[selectedRestaurant.id].meters)}</span>
                   </span>
                 </div>}
                 {selectedRestaurant.phone&&<p style={{fontSize:14,color:"var(--neutral-500)",display:"flex",alignItems:"center",gap:6,marginBottom:16}}><svg width={15} height={15} viewBox="0 0 24 24" fill="var(--neutral-400)"><path d={PHONE_PATH}/></svg>{selectedRestaurant.phone}</p>}
                 <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                  <a href={selectedRestaurant.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:14,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 16px",borderRadius:"var(--radius-sm)",background:"var(--brand-bg)"}}><Pin size={15} color="var(--brand)"/>지도에서 보기</a>
+                  <a href={selectedRestaurant.mapLink} target="_blank" rel="noopener noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:13,fontWeight:600,color:"var(--brand)",textDecoration:"none",padding:"8px 14px",borderRadius:"var(--radius-sm)",border:"1px solid var(--neutral-200)"}}><Pin size={14} color="var(--brand)"/>지도에서 보기</a>
                   <button className="btn-secondary" style={{...DELETE_BTN_STYLE, padding: "8px 14px", fontSize: 13, borderRadius: "var(--radius-sm)"}} onClick={deleteRestaurant}>맛집 삭제</button>
                 </div>
               </div>
-              <div style={{textAlign:"center",padding:"20px 28px",background:"var(--accent-grad)",borderRadius:"var(--radius-lg)"}}>
-                <div style={{fontSize:42,fontWeight:800,color:"var(--brand)",lineHeight:1}}>{selectedRestaurant.reviews.length?calculateAverage(selectedRestaurant.reviews).toFixed(1):"—"}</div>
+              <div style={{textAlign:"center",padding:"20px 28px",background:"var(--rating-bg)",borderRadius:"var(--radius-lg)",border:"1px solid var(--neutral-200)"}}>
+                <div style={{fontSize:42,fontWeight:800,color:"var(--rating-fg)",lineHeight:1}}>{selectedRestaurant.reviews.length?calculateAverage(selectedRestaurant.reviews).toFixed(1):"—"}</div>
                 <Stars rating={calculateAverage(selectedRestaurant.reviews)} size={18}/>
                 <div style={{fontSize:13,color:"var(--neutral-500)",marginTop:6,fontWeight:500}}>리뷰 {selectedRestaurant.reviews.length}개</div>
               </div>
